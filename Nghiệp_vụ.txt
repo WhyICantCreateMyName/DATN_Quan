@@ -1,0 +1,397 @@
+QUẢN LÝ
+1. Vai trò và Giao diện tương tác
+Vai trò: Kiểm soát toàn bộ hoạt động của phòng gym, từ nhân sự, tài chính đến chiến lược kinh doanh.
+Giao diện: Thường là một Dashboard (Bảng điều khiển) trên Web (Back-office) với đầy đủ các biểu đồ báo cáo và các menu quản trị chuyên sâu.
+2. Các nhóm nghiệp vụ trọng tâm
+A. Quản trị Hệ thống và Phân quyền (RBAC - Role-Based Access Control)
+Đây là nghiệp vụ nền tảng để đảm bảo tính bảo mật và toàn vẹn dữ liệu.
+Thiết lập vai trò: Định nghĩa các quyền hạn cụ thể (ví dụ: Lễ tân chỉ được xem hóa đơn, không được xóa; PT chỉ được xem lịch tập của mình).
+Quản lý tài khoản: Cấp mới hoặc khóa tài khoản nhân viên khi có sự thay đổi nhân sự.
+Audit Log (Nhật ký hệ thống): Theo dõi ai đã tác động vào dữ liệu (ví dụ: Ai là người vừa sửa giá gói tập, ai vừa xóa lịch hẹn).
+B. Quản lý Danh mục & Sản phẩm (Master Data Management)
+Quản lý quản lý các "nguyên liệu" để hệ thống vận hành.
+Cấu hình Gói tập: Thiết lập tên gói, giá tiền, thời hạn (1 tháng, 6 tháng), số buổi PT kèm theo, khung giờ được phép tập (gói Off-peak hay Full-time).
+Quản lý Lớp học (Group X): Tạo danh mục các lớp Yoga, Zumba, CrossFit; quy định số lượng học viên tối đa cho mỗi lớp.
+Quản lý Kho hàng: Thiết lập danh mục nước uống, thực phẩm chức năng, phụ kiện tập luyện đi kèm giá bán lẻ.
+C. Quản trị Nhân sự & Hiệu suất (HRM & Performance)
+Quản lý chỉ tiêu (KPI): Thiết lập doanh số mục tiêu cho đội ngũ Sales/Lễ tân và đội ngũ PT.
+Cấu hình Hoa hồng (Commission): Định nghĩa tỷ lệ phần trăm hoa hồng mà PT nhận được trên mỗi gói tập bán được hoặc trên mỗi buổi dạy thực tế.
+Giám sát ca làm việc: Theo dõi lịch trực của nhân viên để đảm bảo luôn có người vận hành phòng tập.
+D. Quản lý Chiến dịch Marketing & CRM
+Biến dữ liệu khách hàng thành doanh thu.
+Phân khúc khách hàng: Lọc danh sách hội viên theo trạng thái (Đang tập, Sắp hết hạn, Đã nghỉ tập lâu ngày).
+Tự động hóa thông báo: Thiết lập các kịch bản gửi thông báo (Push App/SMS) tự động nhân dịp sinh nhật, nhắc gia hạn gói tập hoặc thông báo chương trình khuyến mãi "Giờ vàng".
+E. Báo cáo chiến lược (Business Intelligence)
+Đây là phần quan trọng nhất để Quản lý ra quyết định.
+Báo cáo doanh thu: Phân tích dòng tiền theo thời gian, theo loại hình dịch vụ (gói tập vs bán lẻ).
+Báo cáo tỷ lệ giữ chân (Retention Rate): Theo dõi bao nhiêu phần trăm hội viên cũ tiếp tục gia hạn.
+Báo cáo mật độ (Heatmap): Thống kê các khung giờ cao điểm để điều phối nhân sự và thiết bị hợp lý.
+LỄ TÂN
+1. Vai trò và Giao diện tương tác
+Vai trò: Vận hành luồng khách ra/vào, xử lý giao dịch bán hàng (POS), khởi tạo dữ liệu hội viên ban đầu và hỗ trợ giải đáp thắc mắc.
+Giao diện: Màn hình thu ngân (POS) thao tác nhanh, tích hợp phím tắt, giao diện tra cứu thông tin khách hàng cấp tốc và màn hình giám sát cổng từ/máy quét.
+2. Các nhóm nghiệp vụ trọng tâm
+A. Đón tiếp & Kiểm soát ra vào (Access Control & Check-in)
+Đây là nghiệp vụ diễn ra với tần suất cao nhất.
+Giám sát check-in tự động: Khi hội viên quét vân tay/nhận diện khuôn mặt, màn hình lễ tân sẽ popup thông tin: Tên, Ảnh, Trạng thái gói tập (Hợp lệ, Sắp hết hạn, Hết hạn).
+Xử lý ngoại lệ (Check-in thủ công): Cấp quyền vào cổng cho khách quên thẻ, vân tay bị lỗi, hoặc khách hàng đi tập thử (Free Trial).
+Kiểm soát thất thoát: Ngăn chặn tình trạng một người dùng thẻ của người khác, hoặc chưa thanh toán nợ nhưng vẫn vào tập.
+B. Bán hàng & Thu ngân (Sales & Point of Sale - POS)
+Xử lý toàn bộ dòng tiền mặt và chuyển khoản tại quầy.
+Bán dịch vụ cốt lõi: Tư vấn và tạo hóa đơn bán Gói tập (Membership), Gói PT (Personal Training). Chuyển đổi từ khách vãng lai (Lead) thành hội viên.
+Bán lẻ (Retail): Bán nước, thực phẩm bổ sung, phụ kiện tập luyện. Quét mã vạch sản phẩm, tính tiền, in hóa đơn nhanh chóng.
+Quản lý công nợ & Thanh toán: Thu tiền trả góp (nếu phòng gym cho phép thanh toán nhiều đợt), ghi nhận các hình thức thanh toán (Tiền mặt, Thẻ tín dụng, Chuyển khoản, Ví điện tử). Cuối ca làm việc thực hiện nghiệp vụ Chốt ca / Bàn giao tiền.
+C. Đăng ký & Quản lý Hồ sơ (Onboarding & Profile Management)
+Khởi tạo dữ liệu sạch và chính xác cho hệ thống.
+Onboarding (Nhập môn): Nhập thông tin cá nhân khách mới, chụp ảnh chân dung webcam, đăng ký vân tay/khuôn mặt vào máy quét, phát thẻ RFID (nếu có).
+Bảo lưu / Chuyển nhượng (Freeze/Transfer): Xử lý yêu cầu tạm dừng gói tập có thời hạn (do khách đi công tác, ốm đau) hoặc chuyển nhượng gói tập cho người khác theo chính sách của phòng gym.
+D. Chăm sóc Khách hàng & CRM (Telesales)
+Phần mềm cần hỗ trợ Lễ tân chủ động tạo ra doanh thu.
+Xử lý Leads: Nhận danh sách khách hàng tiềm năng đổ về từ Website (mà chúng ta đã phân tích ở phần trước), gọi điện tư vấn và chốt lịch hẹn đến tham quan.
+Chăm sóc hội viên cũ: Hệ thống nhắc nhở Lễ tân gọi điện cho khách hàng có gói tập sắp hết hạn (trước 7-14 ngày) để mời gia hạn, hoặc gọi cho những hội viên đã 2 tuần không đến phòng tập.
+E. Quản lý Tiện ích & Tài sản (Utilities)
+Quản lý Locker: Check-in cấp phát tủ đồ, theo dõi tủ nào đang có người sử dụng, tủ nào trống, tủ nào bị hỏng khóa. Quản lý việc mượn/trả khăn tập.
+HUẤN LUYÊN VIÊN – PT
+1. Vai trò và Giao diện tương tác
+Vai trò: Theo dõi và thúc đẩy tiến độ của học viên, quản lý thời gian biểu cá nhân, và đảm bảo chất lượng của từng buổi tập chuyên sâu.
+Giao diện: Mobile App/Tablet với giao diện tập trung vào Lịch (Calendar), Danh sách học viên và form nhập liệu chỉ số nhanh chóng.
+2. Các nhóm nghiệp vụ trọng tâm
+A. Quản lý Lịch trình (Schedule & Booking Management)
+Đây là công cụ sinh tồn của một PT để tránh trùng lịch hoặc rỗng lịch.
+Khai báo lịch trống (Availability): PT thiết lập các khung giờ rảnh trong tuần để hệ thống cho phép Lễ tân hoặc Khách hàng đặt lịch (Booking).
+Quản lý Booking: Nhận thông báo khi có học viên đặt lịch, yêu cầu dời lịch hoặc hủy lịch. PT có thể chấp nhận hoặc từ chối dựa trên tình hình thực tế.
+Xem thời khóa biểu: Hiển thị lịch dạy theo Ngày/Tuần dưới dạng Calendar, bao gồm tên học viên, thời gian bắt đầu/kết thúc và mục tiêu của buổi tập.
+B. Quản lý Chỉ số Hình thể (Body Metrics Tracking)
+Dữ liệu y tế và hình thể là bằng chứng cho năng lực của PT.
+Nhập liệu Inbody/Sinh trắc học: Định kỳ (hàng tuần/tháng), PT đo và nhập các chỉ số như Cân nặng, Chiều cao, BMI, Tỷ lệ mỡ (Body Fat), Tỷ lệ cơ bắp (Skeletal Muscle).
+Biểu đồ theo dõi (Progress Tracking): Hệ thống tự động vẽ biểu đồ so sánh các chỉ số qua từng giai đoạn để PT phân tích trực quan cho học viên thấy sự thay đổi.
+C. Nhật ký Tập luyện & Dinh dưỡng (Workout & Nutrition Log)
+Giáo án cá nhân hóa: PT ghi chú lại lộ trình bài tập cho từng học viên (Ví dụ: Hôm nay tập Thân trên - Upper Body, các bài Bench Press, Pull-up với mức tạ bao nhiêu).
+Đánh giá thể lực: Ghi nhận tình trạng thể lực của học viên sau buổi tập (Khỏe, Mệt mỏi, Đau cơ...) để điều chỉnh giáo án cho buổi sau.
+Gợi ý dinh dưỡng: (Tùy chọn) Ghi chú thực đơn ăn uống hoặc thực phẩm bổ sung cần thiết cho học viên.
+D. Xác nhận buổi tập (Session Check-in)
+Nghiệp vụ này liên quan trực tiếp đến tài chính (trừ tiền của khách và tính lương cho PT).
+Check-in kép (Dual Verification): Để tránh gian lận (PT tự ấn hoàn thành khi không dạy), hệ thống thường yêu cầu xác nhận từ cả 2 phía. Ví dụ: Cuối buổi tập, PT mở App trên điện thoại và hội viên quét khuôn mặt/vân tay, hoặc hội viên mở App của mình lên xác nhận bằng mã OTP/QR Code.
+Tự động trừ số buổi: Sau khi check-in thành công, hệ thống tự động trừ đi 1 buổi trong Gói PT của hội viên.
+E. Thống kê Hiệu suất cá nhân (Performance & Commission)
+Theo dõi thu nhập: PT có thể xem realtime tháng này mình đã dạy được bao nhiêu buổi, tương đương với mức hoa hồng/lương dự kiến là bao nhiêu.
+Quản lý Hợp đồng sắp hết hạn: App cảnh báo cho PT biết học viên nào sắp hết số buổi trong gói để PT chủ động tư vấn, thuyết phục học viên mua gói tiếp theo (Renew).
+HỘI VIÊN
+1. Vai trò và Giao diện tương tác
+Vai trò: Trực tiếp sử dụng các dịch vụ, theo dõi tiến độ của bản thân và thực hiện các giao dịch gia hạn, mua sắm.
+Giao diện: Thường là Ứng dụng di động (Mobile App) cá nhân hóa hoặc Cổng thông tin Hội viên (Web Portal) yêu cầu đăng nhập.
+2. Các nhóm nghiệp vụ trọng tâm
+A. Trạm điều khiển cá nhân (Dashboard & Membership Status)
+Hội viên cần nắm rõ tài sản số của mình tại phòng gym.
+Theo dõi gói tập: Xem thông tin chi tiết: Tên gói đang dùng, quyền lợi đi kèm, ngày kích hoạt, ngày hết hạn và số ngày còn lại.
+Quản lý gói PT: Hiển thị tổng số buổi PT đã mua, số buổi đã tập và số buổi còn lại.
+Thẻ thành viên điện tử (E-card): Cung cấp mã QR động (Dynamic QR Code) thay đổi liên tục theo thời gian thực để check-in qua cổng từ, thay thế hoàn toàn cho thẻ vật lý truyền thống.
+B. Đặt lịch & Tham gia lớp học (Booking & Class Scheduling)
+Tính năng này giúp hội viên chủ động thời gian và tránh tình trạng đến nơi nhưng lớp đã đầy.
+Đặt lịch lớp Group X: Xem thời khóa biểu các lớp Yoga, Zumba, Đạp xe... trong tuần. Chọn lớp, chọn vị trí (nếu có) và ấn "Đặt chỗ". Hệ thống sẽ giới hạn số người theo sức chứa của phòng.
+Đặt lịch PT: Xem lịch rảnh của PT cá nhân và chủ động chọn khung giờ tập phù hợp.
+Hủy/Dời lịch: Cho phép hủy lịch trước giờ tập một khoảng thời gian nhất định (ví dụ: trước 2 tiếng) để nhường chỗ cho người khác.
+C. Theo dõi Sức khỏe & Lộ trình (Health & Progress Tracking)
+Đây là tính năng giữ chân hội viên tốt nhất.
+Biểu đồ sức khỏe: Xem lại các chỉ số (Cân nặng, BMI, Tỷ lệ mỡ/cơ) do PT nhập hoặc đồng bộ từ hệ thống máy Inbody của phòng tập. Biểu đồ trực quan giúp hội viên thấy được sự thay đổi của cơ thể qua từng tháng.
+Nhật ký tập luyện: Xem lại lịch sử các buổi đã tập (ngày nào, giờ nào, tập với PT nào).
+D. Mua sắm & Thanh toán trực tuyến (E-commerce & Payments)
+Chuyển đổi quy trình mua bán lên môi trường số.
+Gia hạn tự động / Mua mới: Hội viên có thể tự gia hạn gói tập sắp hết hạn ngay trên App thông qua việc tích hợp cổng thanh toán (VNPay, MoMo, Thẻ tín dụng) mà không cần đến quầy lễ tân.
+Lịch sử giao dịch: Xem và tải lại các hóa đơn (E-invoice) điện tử của các lần mua gói tập hoặc mua phụ kiện, nước uống trước đây.
+E. Tương tác & Đánh giá (Feedback & Engagement)
+Đánh giá dịch vụ: Chấm điểm (Rating 1-5 sao) và để lại nhận xét cho PT sau mỗi buổi dạy, hoặc đánh giá chất lượng của lớp học Yoga/Zumba. Dữ liệu này chuyển thẳng về Dashboard của Quản lý.
+Nhận thông báo (Push Notifications): Nhận tin nhắn nhắc nhở lịch tập, chúc mừng sinh nhật, hoặc các voucher khuyến mãi dành riêng cho hội viên VIP.
+KHÁCH VÃNG LAI
+1. Mục đích chính của Website dành cho khách vãng lai
+Marketing & Thu hút (Acquisition): Là nơi đầu tiên khách hàng tiếp cận khi tìm kiếm phòng gym trên Internet.
+Chuyển đổi số liệu (Conversion): Biến một "người truy cập ẩn danh" thành một "khách hàng tiềm năng" (Lead) có tên và số điện thoại trong hệ thống.
+Giảm tải cho Lễ tân: Khách có thể tự tìm hiểu thông tin, xem lịch học mà không cần gọi điện hay đến trực tiếp quầy.
+2. Các nghiệp vụ (Use Cases) cốt lõi trên Web
+Khi phân tích chức năng cho phân hệ này, bạn cần thiết kế các luồng sau:
+Đăng ký tập thử (Free Trial Booking): Khách điền Form (Tên, SĐT, Email, Cơ sở muốn tập). Dữ liệu này lập tức được đẩy qua API vào phân hệ Quản lý CRM của Lễ tân/Telesale để họ gọi điện chốt lịch hẹn.
+Mua vé lượt / Gói cơ bản trực tuyến (Online Purchase): Khách có thể thanh toán qua VNPay, MoMo để mua vé ngày (Daily Pass). Hệ thống sẽ tự động gửi mã QR qua Email/Zalo để khách đến quét tại cổng check-in mà không cần qua lễ tân.
+Tra cứu Lịch học (Class Schedule): Hiển thị thời khóa biểu realtime của các lớp Yoga, Zumba, Group X. Khách vãng lai chỉ được xem, nhưng nếu muốn đặt chỗ (Book class), hệ thống sẽ yêu cầu Đăng nhập/Đăng ký.
+Khám phá Dịch vụ & Đội ngũ PT: Xem hình ảnh cơ sở vật chất, profile và chứng chỉ của các Huấn luyện viên để tăng độ tin cậy.
+3. Kiến trúc hệ thống thông thường
+Nếu bạn đang thiết kế kiến trúc phần mềm cho toàn bộ dự án, nó thường được chia làm các khối:
+Khối Front-end (Public Face): Một trang Web (có thể xây dựng bằng Next.js, React hoặc WordPress) tối ưu SEO, giao diện bắt mắt.
+Khối Back-end (Core System): Xử lý logic nghiệp vụ, quản lý dữ liệu.
+Khối Internal App/Web: Giao diện cho Admin, Lễ tân, PT (phần mà chúng ta đã phân tích ở trên).
+DATABASE
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "sqlite"
+  url      = "file:./gym_hot_test.db"
+}
+// ==========================================
+// 1. QUẢN LÝ NGƯỜI DÙNG & PHÂN QUYỀN
+// ==========================================
+model User {
+  id           Int      @id @default(autoincrement())
+  phone        String   @unique
+  passwordHash String
+  fullName     String
+  // Các quyền: "ADMIN", "RECEPTIONIST", "PT", "MEMBER"
+  role         String   @default("MEMBER") 
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  // Quan hệ (Relations)
+  memberProfile  MemberProfile?
+  trainerProfile TrainerProfile?
+  invoices       Invoice[]       @relation("CashierInvoices") // Lễ tân tạo hóa đơn
+}
+// Hồ sơ chi tiết của Hội viên
+model MemberProfile {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fingerprintId  String?  @unique // ID kết nối với thiết bị quét vân tay
+  avatarUrl      String?
+  
+  subscriptions  MemberSubscription[]
+  bookings       Booking[]
+  bodyMetrics    BodyMetric[]
+  checkIns       CheckIn[]
+  invoices       Invoice[] @relation("MemberInvoices")
+}
+// Hồ sơ chi tiết của Huấn luyện viên (PT)
+model TrainerProfile {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialization String?  // Ví dụ: Thể hình, Yoga, Phục hồi chấn thương...
+  bio            String?
+  
+  bookings       Booking[]
+  bodyMetrics    BodyMetric[] // Các chỉ số mà PT đo cho học viên
+}
+// ==========================================
+// 2. DANH MỤC & DỊCH VỤ CỐT LÕI
+// ==========================================
+// Danh mục Gói tập
+model MembershipPlan {
+  id               Int      @id @default(autoincrement())
+  name             String
+  description      String?
+  price            Float
+  durationDays     Int      // Thời hạn gói (vd: 30, 180, 365)
+  ptSessions       Int      @default(0) // Số buổi PT kèm theo
+  isActive         Boolean  @default(true)
+  
+  subscriptions    MemberSubscription[]
+  invoiceItems     InvoiceItem[]
+}
+// Gói tập mà hội viên đã mua (Kích hoạt)
+model MemberSubscription {
+  id                  Int      @id @default(autoincrement())
+  memberId            Int
+  member              MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  planId              Int
+  plan                MembershipPlan @relation(fields: [planId], references: [id])
+  
+  startDate           DateTime
+  endDate             DateTime
+  remainingPtSessions Int      @default(0)
+  // Trạng thái: "ACTIVE", "EXPIRED", "FROZEN" (Bảo lưu)
+  status              String   @default("ACTIVE") 
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+// ==========================================
+// 3. TƯƠNG TÁC & VẬN HÀNH (PT & HỘI VIÊN)
+// ==========================================
+// Chỉ số cơ thể (Inbody Tracking)
+model BodyMetric {
+  id           Int      @id @default(autoincrement())
+  memberId     Int
+  member       MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  trainerId    Int?     // PT nào là người đo
+  trainer      TrainerProfile? @relation(fields: [trainerId], references: [id])
+  
+  weight       Float?
+  height       Float?
+  bmi          Float?
+  bodyFat      Float?
+  muscleMass   Float?
+  recordedAt   DateTime @default(now())
+}
+// Lớp học nhóm (Yoga, Zumba...)
+model GroupClass {
+  id           Int      @id @default(autoincrement())
+  name         String   
+  capacity     Int      // Sức chứa tối đa
+  startTime    DateTime
+  endTime      DateTime
+  
+  bookings     Booking[]
+}
+// Đặt lịch (Cho cả PT cá nhân và Lớp học nhóm)
+model Booking {
+  id           Int      @id @default(autoincrement())
+  memberId     Int
+  member       MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  
+  trainerId    Int?
+  trainer      TrainerProfile? @relation(fields: [trainerId], references: [id])
+  groupClassId Int?
+  groupClass   GroupClass? @relation(fields: [groupClassId], references: [id])
+  
+  startTime    DateTime
+  endTime      DateTime
+  // Trạng thái: "PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"
+  status       String   @default("PENDING") 
+  createdAt    DateTime @default(now())
+}
+// Lịch sử Check-in ra vào cổng
+model CheckIn {
+  id           Int      @id @default(autoincrement())
+  memberId     Int
+  member       MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  checkInTime  DateTime @default(now())
+  // Phương thức: "FINGERPRINT", "FACE_ID", "QR_CODE", "MANUAL"
+  method       String   
+}
+// ==========================================
+// 4. POS, BÁN LẺ & TÀI CHÍNH
+// ==========================================
+// Danh mục hàng hóa (Nước, Whey, Phụ kiện)
+model Product {
+  id           Int      @id @default(autoincrement())
+  name         String
+  price        Float
+  stock        Int      // Số lượng tồn kho
+  
+  invoiceItems InvoiceItem[]
+}
+// Hóa đơn thanh toán
+model Invoice {
+  id           Int      @id @default(autoincrement())
+  cashierId    Int      // Lễ tân thực hiện giao dịch
+  cashier      User     @relation("CashierInvoices", fields: [cashierId], references: [id])
+  memberId     Int?     // Khách vãng lai mua lẻ thì có thể null
+  member       MemberProfile? @relation("MemberInvoices", fields: [memberId], references: [id])
+  
+  totalAmount  Float
+  // Hình thức: "CASH", "CARD", "TRANSFER", "MOMO"
+  paymentMethod String  
+  createdAt    DateTime @default(now())
+  
+  items        InvoiceItem[]
+}
+// Chi tiết hóa đơn (Mua gói tập HOẶC mua hàng hóa)
+model InvoiceItem {
+  id           Int      @id @default(autoincrement())
+  invoiceId    Int
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  planId       Int?
+  plan         MembershipPlan? @relation(fields: [planId], references: [id])
+  productId    Int?
+  product      Product? @relation(fields: [productId], references: [id])
+  
+  quantity     Int      @default(1)
+  subTotal     Float
+}
+PHÂN TÍCH DATABASE
+1. Phân hệ Người dùng & Nhân sự
+Nhóm này quản lý tài khoản đăng nhập và thông tin chi tiết tùy theo vai trò của họ.
+Bảng User (Tài khoản gốc)
+| Trường dữ liệu | Kiểu dữ liệu | Khóa | Mô tả |
+| :--- | :--- | :--- | :--- |
+| id | Int | PK | ID tự tăng. |
+| phone | String | Unique | Số điện thoại (Dùng làm tên đăng nhập). |
+| passwordHash | String | | Mật khẩu đã được mã hóa. |
+| fullName | String | | Họ và tên đầy đủ. |
+| role | String | | Vai trò: ADMIN, RECEPTIONIST, PT, MEMBER. |
+| isActive | Boolean | | Trạng thái tài khoản (Đang hoạt động / Bị khóa). |
+Bảng MemberProfile (Hồ sơ mở rộng của Hội viên)
+| Trường dữ liệu | Kiểu dữ liệu | Khóa | Mô tả |
+| :--- | :--- | :--- | :--- |
+| id | Int | PK | Mã hồ sơ hội viên. |
+| userId | Int | FK | Liên kết 1-1 với bảng User. |
+| fingerprintId | String | Unique | Mã ID trên máy quét vân tay/khuôn mặt. |
+| avatarUrl | String | | Link ảnh đại diện chân dung. |
+Bảng TrainerProfile (Hồ sơ mở rộng của PT)
+| Trường dữ liệu | Kiểu dữ liệu | Khóa | Mô tả |
+| :--- | :--- | :--- | :--- |
+| id | Int | PK | Mã hồ sơ PT. |
+| userId | Int | FK | Liên kết 1-1 với bảng User. |
+| specialization | String | | Chuyên môn (Ví dụ: Giảm mỡ, Phục hồi chấn thương). |
+| bio | String | | Dòng giới thiệu ngắn về kinh nghiệm của PT. |
+2. Phân hệ Danh mục (Master Data)
+Nơi lưu trữ các loại hàng hóa và dịch vụ mà phòng gym kinh doanh.
+Bảng MembershipPlan (Danh mục Gói tập)
+| Trường dữ liệu | Kiểu dữ liệu | Khóa | Mô tả |
+| :--- | :--- | :--- | :--- |
+| id | Int | PK | Mã gói tập. |
+| name | String | | Tên gói (Ví dụ: Thẻ Vàng 1 Năm, Thẻ Bạc 6 Tháng). |
+| price | Float | | Giá bán niêm yết. |
+| durationDays | Int | | Thời hạn sử dụng tính bằng ngày (Ví dụ: 30, 365). |
+| ptSessions | Int | | Số buổi PT được tặng kèm miễn phí trong gói. |
+Bảng Product (Danh mục Hàng hóa bán lẻ)
+| Trường dữ liệu | Kiểu dữ liệu | Khóa | Mô tả |
+| :--- | :--- | :--- | :--- |
+| id | Int | PK | Mã sản phẩm. |
+| name | String | | Tên hàng (Ví dụ: Nước suối, Whey Protein). |
+| price | Float | | Giá bán lẻ. |
+| stock | Int | | Số lượng tồn kho hiện tại. |
+3. Phân hệ Vận hành & Dịch vụ cốt lõi
+Quản lý tài sản số của hội viên và các hoạt động hàng ngày.
+Bảng MemberSubscription (Gói tập hội viên đang sở hữu)
+| Trường dữ liệu | Kiểu dữ liệu | Khóa | Mô tả |
+| :--- | :--- | :--- | :--- |
+| id | Int | PK | Mã quản lý gói tập của khách. |
+| memberId | Int | FK | Liên kết tới MemberProfile. |
+| planId | Int | FK | Liên kết tới MembershipPlan. |
+| startDate | DateTime | | Ngày bắt đầu tính thời hạn gói. |
+| endDate | DateTime | | Ngày hết hạn gói. |
+| remainingPtSessions| Int | | Số buổi PT còn lại (bị trừ dần khi check-in PT). |
+| status | String | | Trạng thái gói: ACTIVE (Đang tập), EXPIRED (Hết hạn), FROZEN (Bảo lưu). |
+Bảng CheckIn (Lịch sử ra vào cổng)
+| Trường dữ liệu | Kiểu dữ liệu | Khóa | Mô tả |
+| :--- | :--- | :--- | :--- |
+| id | Int | PK | Mã lượt ra vào. |
+| memberId | Int | FK | Ai là người check-in. |
+| checkInTime | DateTime | | Thời gian chính xác lúc qua cổng. |
+| method | String | | Cách thức: FINGERPRINT, FACE_ID, MANUAL (Lễ tân mở thủ công). |
+Bảng Booking (Lịch hẹn PT hoặc Lớp học)
+| Trường dữ liệu | Kiểu dữ liệu | Khóa | Mô tả |
+| :--- | :--- | :--- | :--- |
+| id | Int | PK | Mã lịch hẹn. |
+| memberId | Int | FK | Hội viên nào đặt lịch. |
+| trainerId | Int | FK | Đặt với PT nào (có thể null nếu đặt lớp nhóm). |
+| groupClassId | Int | FK | Đặt lớp nhóm nào (có thể null nếu đặt PT). |
+| startTime | DateTime | | Thời gian bắt đầu. |
+| status | String | | Trạng thái: PENDING, CONFIRMED, COMPLETED, CANCELLED. |
+Bảng BodyMetric (Chỉ số Inbody)
+| Trường dữ liệu | Kiểu dữ liệu | Khóa | Mô tả |
+| :--- | :--- | :--- | :--- |
+| id | Int | PK | Mã bản ghi đo lường. |
+| memberId | Int | FK | Chỉ số của hội viên nào. |
+| weight | Float | | Cân nặng (kg). |
+| bodyFat | Float | | Tỷ lệ mỡ (%). |
+| muscleMass | Float | | Lượng cơ bắp (kg). |
+| recordedAt | DateTime | | Ngày đo (Dùng để vẽ biểu đồ theo thời gian). |
+4. Phân hệ Tài chính (POS & Hóa đơn)
+Bảng Invoice (Hóa đơn tổng)
+| Trường dữ liệu | Kiểu dữ liệu | Khóa | Mô tả |
+| :--- | :--- | :--- | :--- |
+| id | Int | PK | Mã hóa đơn. |
+| cashierId | Int | FK | Lễ tân nào lập hóa đơn (Liên kết User). |
+| memberId | Int | FK | Khách hàng nào mua (Có thể null nếu khách vãng lai mua chai nước). |
+| totalAmount | Float | | Tổng tiền khách phải trả. |
+| paymentMethod | String | | Hình thức thanh toán (CASH, CARD, MOMO...). |
+Bảng InvoiceItem (Chi tiết hóa đơn)
+| Trường dữ liệu | Kiểu dữ liệu | Khóa | Mô tả |
+| :--- | :--- | :--- | :--- |
+| id | Int | PK | Mã dòng chi tiết. |
+| invoiceId | Int | FK | Thuộc hóa đơn nào. |
+| planId | Int | FK | Mua gói tập nào (nếu có). |
+| productId | Int | FK | Mua sản phẩm nào (nếu có). |
+| quantity | Int | | Số lượng. |
+| subTotal | Float | | Thành tiền của dòng này. |

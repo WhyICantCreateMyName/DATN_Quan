@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// 1. QUẢN LÝ NGƯỜI DÙNG & PHÂN QUYỀN
+// ==========================================
+model User {
+  id           Int      @id @default(autoincrement())
+  phone        String   @unique
+  passwordHash String
+  fullName     String
+  // Các quyền: "ADMIN", "RECEPTIONIST", "PT", "MEMBER"
+  role         String   @default("MEMBER") 
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Quan hệ (Relations)
+  memberProfile  MemberProfile?
+  trainerProfile TrainerProfile?
+  invoices       Invoice[]       @relation("CashierInvoices") // Lễ tân tạo hóa đơn
+}
+
+// Hồ sơ chi tiết của Hội viên
+model MemberProfile {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fingerprintId  String?  @unique // ID kết nối với thiết bị quét vân tay
+  avatarUrl      String?
+  
+  subscriptions  MemberSubscription[]
+  bookings       Booking[]
+  bodyMetrics    BodyMetric[]
+  checkIns       CheckIn[]
+  invoices       Invoice[] @relation("MemberInvoices")
+}
+
+// Hồ sơ chi tiết của Huấn luyện viên (PT)
+model TrainerProfile {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialization String?  // Ví dụ: Thể hình, Yoga, Phục hồi chấn thương...
+  bio            String?
+  
+  bookings       Booking[]
+  bodyMetrics    BodyMetric[] // Các chỉ số mà PT đo cho học viên
+}
+
+// ==========================================
+// 2. DANH MỤC & DỊCH VỤ CỐT LÕI
+// ==========================================
+// Danh mục Gói tập
+model MembershipPlan {
+  id               Int      @id @default(autoincrement())
+  name             String
+  description      String?
+  price            Float
+  durationDays     Int      // Thời hạn gói (vd: 30, 180, 365)
+  ptSessions       Int      @default(0) // Số buổi PT kèm theo
+  isActive         Boolean  @default(true)
+  
+  subscriptions    MemberSubscription[]
+  invoiceItems     InvoiceItem[]
+}
+
+// Gói tập mà hội viên đã mua (Kích hoạt)
+model MemberSubscription {
+  id                  Int      @id @default(autoincrement())
+  memberId            Int
+  member              MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  planId              Int
+  plan                MembershipPlan @relation(fields: [planId], references: [id])
+  
+  startDate           DateTime
+  endDate             DateTime
+  remainingPtSessions Int      @default(0)
+  // Trạng thái: "ACTIVE", "EXPIRED", "FROZEN" (Bảo lưu)
+  status              String   @default("ACTIVE") 
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// ==========================================
+// 3. TƯƠNG TÁC & VẬN HÀNH (PT & HỘI VIÊN)
+// ==========================================
+// Chỉ số cơ thể (Inbody Tracking)
+model BodyMetric {
+  id           Int      @id @default(autoincrement())
+  memberId     Int
+  member       MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  trainerId    Int?     // PT nào là người đo
+  trainer      TrainerProfile? @relation(fields: [trainerId], references: [id])
+  
+  weight       Float?
+  height       Float?
+  bmi          Float?
+  bodyFat      Float?
+  muscleMass   Float?
+  recordedAt   DateTime @default(now())
+}
+
+// Lớp học nhóm (Yoga, Zumba...)
+model GroupClass {
+  id           Int      @id @default(autoincrement())
+  name         String   
+  capacity     Int      // Sức chứa tối đa
+  startTime    DateTime
+  endTime      DateTime
+  
+  bookings     Booking[]
+}
+
+// Đặt lịch (Cho cả PT cá nhân và Lớp học nhóm)
+model Booking {
+  id           Int      @id @default(autoincrement())
+  memberId     Int
+  member       MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  
+  trainerId    Int?
+  trainer      TrainerProfile? @relation(fields: [trainerId], references: [id])
+  groupClassId Int?
+  groupClass   GroupClass? @relation(fields: [groupClassId], references: [id])
+  
+  startTime    DateTime
+  endTime      DateTime
+  // Trạng thái: "PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"
+  status       String   @default("PENDING") 
+  createdAt    DateTime @default(now())
+}
+
+// Lịch sử Check-in ra vào cổng
+model CheckIn {
+  id           Int      @id @default(autoincrement())
+  memberId     Int
+  member       MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  checkInTime  DateTime @default(now())
+  // Phương thức: "FINGERPRINT", "FACE_ID", "QR_CODE", "MANUAL"
+  method       String   
+}
+
+// ==========================================
+// 4. POS, BÁN LẺ & TÀI CHÍNH
+// ==========================================
+// Danh mục hàng hóa (Nước, Whey, Phụ kiện)
+model Product {
+  id           Int      @id @default(autoincrement())
+  name         String
+  price        Float
+  stock        Int      // Số lượng tồn kho
+  
+  invoiceItems InvoiceItem[]
+}
+
+// Hóa đơn thanh toán
+model Invoice {
+  id           Int      @id @default(autoincrement())
+  cashierId    Int      // Lễ tân thực hiện giao dịch
+  cashier      User     @relation("CashierInvoices", fields: [cashierId], references: [id])
+  memberId     Int?     // Khách vãng lai mua lẻ thì có thể null
+  member       MemberProfile? @relation("MemberInvoices", fields: [memberId], references: [id])
+  
+  totalAmount  Float
+  // Hình thức: "CASH", "CARD", "TRANSFER", "MOMO"
+  paymentMethod String  
+  createdAt    DateTime @default(now())
+  
+  items        InvoiceItem[]
+}
+
+// Chi tiết hóa đơn (Mua gói tập HOẶC mua hàng hóa)
+model InvoiceItem {
+  id           Int      @id @default(autoincrement())
+  invoiceId    Int
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  planId       Int?
+  plan         MembershipPlan? @relation(fields: [planId], references: [id])
+  productId    Int?
+  product      Product? @relation(fields: [productId], references: [id])
+  
+  quantity     Int      @default(1)
+  subTotal     Float
+}
