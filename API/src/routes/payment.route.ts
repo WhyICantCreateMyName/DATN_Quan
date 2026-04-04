@@ -3,17 +3,15 @@ import type { Request, Response } from 'express';
 
 const router = Router();
 
-// Sandbox MoMo Payment Simulation
 router.post('/momo', async (req: Request, res: Response) => {
   try {
     const { orderId, amount, orderInfo } = req.body;
-    
+
     if (!amount) {
       res.status(400).json({ error: 'Thiếu số tiền thanh toán' });
       return;
     }
 
-    // Mô phỏng chuẩn Format trả về của API MoMo quét QRCode
     const mockMomoResponse = {
       partnerCode: "MOMO_TEST_SANDBOX",
       orderId: orderId || `MOMO_${Date.now()}`,

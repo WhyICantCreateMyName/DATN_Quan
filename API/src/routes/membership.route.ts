@@ -70,4 +70,15 @@ router.get('/user/:memberId', async (req: Request, res: Response) => {
   }
 });
 
+// Xóa gói tập
+router.delete('/plans/:id', async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    await prisma.membershipPlan.delete({ where: { id } });
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

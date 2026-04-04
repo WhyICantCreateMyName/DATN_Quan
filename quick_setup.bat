@@ -20,6 +20,11 @@ cd ../guest-web
 call npm install
 
 echo.
+echo [4/4] Dang cai dat cac goi thu vien cho Quan tri (Admin Web)...
+cd ../admin-web
+call npm install
+
+echo.
 echo =========================================
 echo HOAN TAT SETUP! TAT CA DA SAN SANG.
 echo Ban bay gio da co the nhay vao file start_app.bat de khoi chay.

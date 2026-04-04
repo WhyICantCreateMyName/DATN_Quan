@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3001',
+  origin: ['http://localhost:3001', 'http://localhost:3002'],
   credentials: true
 }));
 app.use(express.json());
@@ -31,12 +31,17 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Gym API is running...');
 });
 
+import statsRoutes from './routes/stats.route.js';
+import checkinRoutes from './routes/checkin.route.js';
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/memberships', membershipRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/pos', posRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/checkin', checkinRoutes);
 
 // Start server
 app.listen(PORT, () => {

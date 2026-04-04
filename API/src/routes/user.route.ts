@@ -8,13 +8,45 @@ const prisma = new PrismaClient();
 // Lấy danh sách toàn bộ Users
 router.get('/', async (req: Request, res: Response) => {
   try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    let limit = Math.max(1, Number(req.query.limit) || 10);
+    limit = Math.min(limit, 50); // Tối đa 50 
+
+    const roleFilter = req.query.role as string;
+    const whereClause: any = {};
+    if (roleFilter === 'STAFF') {
+      whereClause.role = { not: 'MEMBER' };
+    } else if (roleFilter) {
+      whereClause.role = roleFilter;
+    }
+
+    const total = await prisma.user.count({ where: whereClause });
     const users = await prisma.user.findMany({
+      where: whereClause,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { id: 'desc' },
       include: {
-        memberProfile: true,
+        memberProfile: {
+          include: {
+            subscriptions: {
+              include: { plan: true }
+            }
+          }
+        },
         trainerProfile: true
       }
     });
-    res.json(users);
+
+    res.json({
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: 'Lỗi khi lấy danh sách user' });
   }
@@ -36,8 +68,7 @@ router.post('/', async (req: Request, res: Response) => {
         passwordHash: password, // Todo: mã hoá bcrypt
         fullName,
         role: role || 'MEMBER',
-        // Tự động tạo hồ sơ dựa trên role
-        memberProfile: role === 'MEMBER' || !role ? { create: {} } : undefined,
+        memberProfile: (role === 'MEMBER' || !role) ? { create: {} } : undefined,
         trainerProfile: role === 'PT' ? { create: { specialization: 'General' } } : undefined
       }
     });

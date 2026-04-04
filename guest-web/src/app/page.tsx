@@ -32,20 +32,20 @@ export default function Home() {
             className="max-w-3xl"
           >
             <h1 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter leading-tight">
-              Đánh Thức <br />
+              Khai Phá <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-blue to-white">
-                Sức Mạnh Tiềm Ẩn
+                Phiên Bản Hoàn Hảo Nhất
               </span>
             </h1>
             <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl font-light">
-              Hệ thống phòng tập chuẩn 5 sao với trang thiết bị hiện đại bậc nhất. Tham gia ngay hôm nay để nhận được sự đồng hành từ các chuyên gia thể hình hàng đầu.
+              Chào mừng bạn đến với cộng đồng thể hình bùng nổ nhất. Trang thiết bị đỉnh cao cùng những huấn luyện viên tâm huyết sẽ giúp bạn sớm điêu khắc nên vóc dáng trong mơ.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button 
                 onClick={() => setIsModalOpen(true)}
                 className="bg-neon-blue text-black font-bold uppercase tracking-wide px-8 py-4 rounded-full hover:bg-white transition-all transform hover:scale-105 neon-border flex items-center justify-center gap-2"
               >
-                Tập Thử Miễn Phí <ArrowRight className="w-5 h-5" />
+                Trải Nghiệm Miễn Phí <ArrowRight className="w-5 h-5" />
               </button>
               <button className="glass text-white font-bold uppercase tracking-wide px-8 py-4 rounded-full hover:bg-white/10 transition-all flex items-center justify-center gap-2">
                 Xem Lịch Tập
@@ -62,17 +62,17 @@ export default function Home() {
             <motion.div whileHover={{ y: -5 }} className="glass p-8 rounded-2xl flex flex-col items-center text-center">
               <Activity className="w-12 h-12 text-neon-blue mb-4 animate-pulse-slow" />
               <h3 className="text-3xl font-black mb-2">500+</h3>
-              <p className="text-gray-400">Máy Tối Tân</p>
+              <p className="text-gray-400">Thiết Bị Tối Tân</p>
             </motion.div>
             <motion.div whileHover={{ y: -5 }} className="glass p-8 rounded-2xl flex flex-col items-center text-center">
               <Users className="w-12 h-12 text-neon-blue mb-4 animate-pulse-slow" />
               <h3 className="text-3xl font-black mb-2">50+</h3>
-              <p className="text-gray-400">PT Chuyên Nghiệp</p>
+              <p className="text-gray-400">Coach Đồng Hành</p>
             </motion.div>
             <motion.div whileHover={{ y: -5 }} className="glass p-8 rounded-2xl flex flex-col items-center text-center">
               <MapPin className="w-12 h-12 text-neon-blue mb-4 animate-pulse-slow" />
               <h3 className="text-3xl font-black mb-2">5</h3>
-              <p className="text-gray-400">Cơ Sở Trung Tâm</p>
+              <p className="text-gray-400">Cơ Sở Trải Dài</p>
             </motion.div>
           </div>
         </div>
@@ -82,8 +82,8 @@ export default function Home() {
       <section className="py-24 relative overflow-hidden bg-dark-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4">Huấn Luyện Viên <span className="neon-text">Hàng Đầu</span></h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Đội ngũ chuyên gia được đào tạo bài bản, sẵn sàng đồng hành cùng bạn thiết kế lộ trình riêng biệt để đạt mục tiêu hằng mơ ước.</p>
+            <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4">Người Bạn <span className="neon-text">Đồng Hành</span></h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Không chỉ là những người hướng dẫn, họ là những người bạn sẽ sát cánh cùng bạn đập tan mọi vòng eo mỡ màng để chạm tới đỉnh cao thể lực.</p>
           </div>
           
           <div className="flex justify-center relative">

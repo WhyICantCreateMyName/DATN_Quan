@@ -62,8 +62,8 @@ export default function Navigation() {
               {!loading && (
                 currentUser ? (
                   <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-2 text-sm font-bold text-neon-blue"><UserIcon className="w-4 h-4"/> Chào, {currentUser.fullName}</span>
-                    <button onClick={handleLogout} className="text-gray-400 hover:text-white transition-colors" title="Đăng Xuất"><LogOut className="w-5 h-5"/></button>
+                    <span className="flex items-center gap-2 text-sm font-bold text-neon-blue"><UserIcon className="w-4 h-4"/> Chào mừng, {currentUser.fullName}! ✌️</span>
+                    <button onClick={handleLogout} className="text-gray-400 hover:text-white transition-colors" title="Rời Khỏi"><LogOut className="w-5 h-5"/></button>
                   </div>
                 ) : (
                   <button 
@@ -117,7 +117,7 @@ export default function Navigation() {
             <motion.div initial={{scale:0.95, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.95, opacity:0}} className="relative w-full max-w-sm bg-dark-card border border-white/10 rounded-3xl p-8 shadow-2xl">
               <button onClick={() => setShowLogin(false)} className="absolute right-4 top-4 text-gray-400 hover:text-white pt-2 pr-2"><X className="w-5 h-5"/></button>
               
-              <h2 className="text-2xl font-black mb-6 uppercase tracking-tight text-center">Đăng <span className="neon-text">Nhập</span></h2>
+              <h2 className="text-2xl font-black mb-6 uppercase tracking-tight text-center">Lên Đồ <span className="neon-text">Vào Gym</span></h2>
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
                   <label className="block text-sm text-gray-400 mb-1">Số điện thoại</label>
@@ -127,7 +127,7 @@ export default function Navigation() {
                   <label className="block text-sm text-gray-400 mb-1">Mật khẩu</label>
                   <input type="password" value={password} onChange={e=>setPassword(e.target.value)} className="w-full bg-dark-bg border border-white/10 rounded-xl px-4 py-3 focus:border-neon-blue outline-none" required />
                 </div>
-                <button type="submit" className="w-full bg-neon-blue text-black font-bold py-3 rounded-xl mt-4 hover:bg-white transition-all neon-border">Truy Cập</button>
+                <button type="submit" className="w-full bg-neon-blue text-black font-bold py-3 rounded-xl mt-4 hover:bg-white transition-all neon-border">Tập Thôi Nào</button>
               </form>
             </motion.div>
           </div>

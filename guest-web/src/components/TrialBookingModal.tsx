@@ -63,13 +63,13 @@ export default function TrialBookingModal({ isOpen, onClose }: Props) {
                 <div className="w-20 h-20 bg-neon-blue/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <CalendarCheck className="w-10 h-10 text-neon-blue" />
                 </div>
-                <h3 className="text-2xl font-black mb-2">Đăng Ký Thành Công!</h3>
-                <p className="text-gray-400">Lễ tân của chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để chốt lịch hẹn.</p>
+                <h3 className="text-2xl font-black mb-2">Ngầu Quá! Đã Ghi Nhận!</h3>
+                <p className="text-gray-400">Lễ tân đáng yêu của chúng mình sẽ nhấc máy gọi bạn trong ít phút nữa để chốt lịch hẹn lên gặp mặt đo inbody nhé.</p>
               </div>
             ) : (
               <>
-                <h2 className="text-3xl font-black mb-2 uppercase tracking-tight">Đăng Ký <span className="neon-text">Tập Thử</span></h2>
-                <p className="text-gray-400 mb-8 text-sm">Trải nghiệm miễn phí 7 ngày VIP tại chuỗi hệ thống Titan. Để lại thông tin ngay!</p>
+                <h2 className="text-3xl font-black mb-2 uppercase tracking-tight">Kích Hoạt <span className="neon-text">Thẻ Quyền Lực</span></h2>
+                <p className="text-gray-400 mb-8 text-sm">Trọn vẹn 7 ngày cày ải miệt mài hệ thống VIP. Điền thông tin vào ngay để lột xác nhanh chóng!</p>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
@@ -99,7 +99,7 @@ export default function TrialBookingModal({ isOpen, onClose }: Props) {
                     type="submit" 
                     className="w-full bg-neon-blue text-black font-bold uppercase tracking-wide py-4 border border-transparent rounded-xl hover:bg-white transition-all neon-border flex items-center justify-center gap-2 mt-4"
                   >
-                    {loading ? 'Đang Xử Lý...' : 'Gửi Yêu Cầu'}
+                    {loading ? 'Đang Ép Mỡ...' : 'Tới Bến Luôn'}
                   </button>
                 </form>
               </>
