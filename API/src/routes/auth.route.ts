@@ -28,6 +28,12 @@ router.post('/login', async (req: Request, res: Response) => {
       { expiresIn: '7d' }
     );
 
+    const platform = req.headers['x-platform'] || req.headers['platform'];
+    if (platform === 'mobile' || platform === 'expo') {
+       res.json({ user, token });
+       return;
+    }
+
     // Gắn vào HttpOnly Cookie
     res.cookie('jwt', token, {
       httpOnly: true,
@@ -44,7 +50,7 @@ router.post('/login', async (req: Request, res: Response) => {
 // Lấy thông tin phiên đăng nhập
 router.get('/me', async (req: Request, res: Response) => {
   try {
-    const token = req.cookies.jwt;
+    const token = req.cookies.jwt || (req.headers.authorization ? req.headers.authorization.split(' ')[1] : null);
     if (!token) {
       res.status(401).json({ error: 'Chưa đăng nhập' });
       return;

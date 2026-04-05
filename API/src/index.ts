@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3001', 'http://localhost:3002'],
+  origin: true, // Allow ngrok and expo
   credentials: true
 }));
 app.use(express.json());
@@ -33,6 +33,8 @@ app.get('/', (req: Request, res: Response) => {
 
 import statsRoutes from './routes/stats.route.js';
 import checkinRoutes from './routes/checkin.route.js';
+import trainerRoutes from './routes/trainer.route.js';
+import metricsRoutes from './routes/metrics.route.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -42,6 +44,8 @@ app.use('/api/pos', posRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/checkin', checkinRoutes);
+app.use('/api/trainer', trainerRoutes);
+app.use('/api/metrics', metricsRoutes);
 
 // Start server
 app.listen(PORT, () => {
