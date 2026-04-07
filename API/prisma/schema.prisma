@@ -49,6 +49,10 @@ model TrainerProfile {
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   specialization String?  // Ví dụ: Thể hình, Yoga, Phục hồi chấn thương...
   bio            String?
+  avatarBase64   String?  // Lưu trữ chuỗi Base64 ảnh đại diện
+  height         Float?
+  weight         Float?
+  bodyFat        Float?
   
   bookings       Booking[]
   bodyMetrics    BodyMetric[] // Các chỉ số mà PT đo cho học viên

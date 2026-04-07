@@ -2,7 +2,7 @@ import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { useState, useCallback, useEffect } from 'react';
 import { Dumbbell, Target, Banknote, CalendarCheck } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import axios from 'axios';
+import { trainerService } from '@/services/trainerApi';
 
 export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -10,8 +10,8 @@ export default function DashboardScreen() {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get(`/trainer/dashboard`);
-      setStats(res.data);
+      const data = await trainerService.getDashboard();
+      setStats(data);
     } catch (e) {}
   };
 

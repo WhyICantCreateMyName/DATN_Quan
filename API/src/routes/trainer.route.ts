@@ -112,4 +112,37 @@ router.get('/schedule', async (req: Request, res: Response) => {
   }
 });
 
+// PUT /trainer/profile (Cập nhật thông tin PT)
+router.put('/profile', async (req: Request, res: Response) => {
+  try {
+    const ptId = getPtId(req);
+    if (!ptId) return res.status(401).json({ error: 'Unauthorized PT' });
+
+    const { fullName, avatarBase64, specialization, bio, height, weight, bodyFat } = req.body;
+
+    // Update User (FullName)
+    const user = await prisma.user.update({
+      where: { id: ptId },
+      data: { fullName }
+    });
+
+    // Update TrainerProfile
+    const profile = await prisma.trainerProfile.update({
+      where: { userId: ptId },
+      data: {
+        avatarBase64,
+        specialization,
+        bio,
+        height: height ? Number(height) : null,
+        weight: weight ? Number(weight) : null,
+        bodyFat: bodyFat ? Number(bodyFat) : null
+      }
+    });
+
+    res.json({ user, profile });
+  } catch (e: any) {
+    res.status(500).json({ error: 'Lỗi cập nhật: ' + e.message });
+  }
+});
+
 export default router;

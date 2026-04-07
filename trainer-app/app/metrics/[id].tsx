@@ -2,7 +2,7 @@ import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, KeyboardAvo
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { metricsService } from '@/services/trainerApi';
 import { ChevronLeft, Save } from 'lucide-react-native';
 import Svg, { Polygon, Line, Text as SvgText } from 'react-native-svg';
 
@@ -27,10 +27,10 @@ export default function MetricsScreen() {
 
    const load = async () => {
       try {
-         const res = await axios.get(`/metrics/${id}`);
-         setHistory(res.data);
-         if(res.data.length > 0) {
-            const last = res.data[res.data.length-1];
+         const data = await metricsService.getHistory(id as string);
+         setHistory(data);
+         if(data.length > 0) {
+            const last = data[data.length-1];
             setForm({ weight: last.weight.toString(), height: last.height.toString(), bodyFat: last.bodyFat.toString(), muscleMass: last.muscleMass.toString() });
          }
       } catch (e) {}
@@ -40,7 +40,7 @@ export default function MetricsScreen() {
 
    const handleSave = async () => {
       try {
-         await axios.post(`/metrics`, { ...form, memberId: Number(id) });
+         await metricsService.save({ ...form, memberId: Number(id) });
          Alert.alert('Thành công', 'Đã lưu chỉ số Inbody mới!');
          load(); // Refresh history
       } catch (e) { Alert.alert('Lỗi', 'Không thể lưu (Kiểm tra lại server)'); }

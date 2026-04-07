@@ -30,6 +30,11 @@ cd ../trainer-app
 call npm install
 
 echo.
+echo [6/6] Dang cai dat cac goi thu vien cho Hoi vien (Member App)...
+cd ../member-app
+call npm install
+
+echo.
 echo =========================================
 echo HOAN TAT SETUP! TAT CA DA SAN SANG.
 echo Ban bay gio da co the nhay vao file start_app.bat de khoi chay.

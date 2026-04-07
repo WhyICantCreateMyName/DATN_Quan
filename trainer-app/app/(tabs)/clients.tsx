@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useCallback, useEffect } from 'react';
-import axios from 'axios';
+import { trainerService } from '@/services/trainerApi';
 import { Activity, ChevronRight, User } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
@@ -12,8 +12,8 @@ export default function ClientsScreen() {
 
    const load = async () => {
       try {
-         const res = await axios.get(`/trainer/clients`);
-         setClients(res.data);
+         const data = await trainerService.getClients();
+         setClients(data);
       } catch (e) {}
    };
 

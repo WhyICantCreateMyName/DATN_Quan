@@ -35,6 +35,7 @@ import statsRoutes from './routes/stats.route.js';
 import checkinRoutes from './routes/checkin.route.js';
 import trainerRoutes from './routes/trainer.route.js';
 import metricsRoutes from './routes/metrics.route.js';
+import memberRoutes from './routes/member.route.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -46,6 +47,7 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/checkin', checkinRoutes);
 app.use('/api/trainer', trainerRoutes);
 app.use('/api/metrics', metricsRoutes);
+app.use('/api/member', memberRoutes);
 
 // Start server
 app.listen(PORT, () => {

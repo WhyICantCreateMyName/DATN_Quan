@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useCallback, useEffect } from 'react';
-import axios from 'axios';
+import { trainerService } from '@/services/trainerApi';
 import { Search, Clock } from 'lucide-react-native';
 
 export default function ScheduleScreen() {
@@ -10,8 +10,8 @@ export default function ScheduleScreen() {
 
    const load = async () => {
       try {
-         const res = await axios.get(`/trainer/schedule`);
-         setSchedule(res.data);
+         const data = await trainerService.getSchedule();
+         setSchedule(data);
       } catch (e) {}
    };
 

@@ -2,12 +2,8 @@ import { Tabs, useRouter } from 'expo-router';
 import { UserCircle2, Calendar, LayoutDashboard, Settings } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
 import { View, ActivityIndicator } from 'react-native';
-
-const NGROK_API = 'https://robert-leafiest-kristen.ngrok-free.dev/api';
-axios.defaults.baseURL = NGROK_API;
-axios.defaults.headers.common['x-platform'] = 'mobile';
+import { setAuthToken } from '@/services/apiClient';
 
 export default function TabLayout() {
   const router = useRouter();
@@ -17,7 +13,7 @@ export default function TabLayout() {
      SecureStore.getItemAsync('pt_token').then(token => {
         if (!token) { router.replace('/login'); }
         else {
-           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; 
+           setAuthToken(token);
            setLoading(false);
         }
      }).catch(() => router.replace('/login'));
