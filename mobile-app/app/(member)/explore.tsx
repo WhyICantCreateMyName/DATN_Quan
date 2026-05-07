@@ -89,8 +89,8 @@ export default function BookingScreen() {
                   style={[styles.trainerCard, selectedTrainer?.id === t.id && styles.trainerCardActive]}
                 >
                   <View style={styles.avatarContainer}>
-                    {t.avatarBase64 ? (
-                      <Image source={{ uri: t.avatarBase64 }} style={styles.avatar} />
+                    {t.avatarUrl ? (
+                      <Image source={{ uri: t.avatarUrl }} style={styles.avatar} />
                     ) : (
                       <User color={COLORS.textSecondary} size={32} />
                     )}

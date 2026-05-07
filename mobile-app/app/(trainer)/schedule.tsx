@@ -1,9 +1,10 @@
-import { View, Text, ScrollView, RefreshControl, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, StyleSheet, TouchableOpacity, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useCallback, useEffect } from 'react';
-import { trainerService } from '@/services/trainerApi';
-import { Search, Clock, Calendar, Check, X, Dumbbell } from 'lucide-react-native';
+import { trainerService, authService } from '@/services/trainerApi';
+import { Search, Clock, Calendar, Check, X, Dumbbell, QrCode } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 const COLORS = {
    background: '#020617',
@@ -19,11 +20,20 @@ export default function ScheduleScreen() {
    const router = useRouter();
    const [schedule, setSchedule] = useState<any[]>([]);
    const [refreshing, setRefreshing] = useState(false);
+   const [user, setUser] = useState<any>(null);
+
+   const [permission, requestPermission] = useCameraPermissions();
+   const [scannerVisible, setScannerVisible] = useState(false);
+   const [scanned, setScanned] = useState(false);
 
    const load = async () => {
       try {
-         const res = await trainerService.getSchedule();
+         const [res, me] = await Promise.all([
+            trainerService.getSchedule(),
+            authService.getMe()
+         ]);
          setSchedule(res?.data || []);
+         setUser(me);
       } catch (e) { 
          setSchedule([]);
       }
@@ -40,6 +50,38 @@ export default function ScheduleScreen() {
       } catch (e) {
          Alert.alert('Lỗi', 'Không thể cập nhật trạng thái');
       }
+   };
+
+   const handleBarCodeScanned = async ({ data }: { data: string }) => {
+      if (scanned) return;
+      setScanned(true);
+      try {
+         const qrData = JSON.parse(data);
+         if (qrData.type === 'SESSION_COMPLETE' && qrData.bookingId) {
+            await trainerService.completeWithQR(qrData.bookingId, user.id);
+            setScannerVisible(false);
+            Alert.alert('Thành công', 'Đã xác nhận hoàn thành buổi tập và trừ buổi khách hàng.');
+            load();
+         } else {
+            Alert.alert('Lỗi', 'Mã QR không hợp lệ cho việc xác nhận buổi tập');
+         }
+      } catch (e: any) {
+         Alert.alert('Lỗi', e.response?.data?.error || 'Không thể xử lý mã QR');
+      } finally {
+         setTimeout(() => setScanned(false), 2000);
+      }
+   };
+
+   const startScan = async () => {
+      if (!permission?.granted) {
+         const { granted } = await requestPermission();
+         if (!granted) {
+            Alert.alert('Quyền truy cập', 'Vui lòng cấp quyền Camera để quét mã QR');
+            return;
+         }
+      }
+      setScannerVisible(true);
+      setScanned(false);
    };
 
    return (
@@ -72,7 +114,7 @@ export default function ScheduleScreen() {
                      <View style={styles.infoSection}>
                         <Text style={styles.memberName}>{b.member?.user?.fullName}</Text>
                         <View style={styles.statusRow}>
-                           <View style={[styles.statusBadge, b.status === 'CONFIRMED' ? styles.statusConfirmed : b.status === 'PENDING' ? styles.statusPending : styles.statusCancelled]}>
+                           <View style={[styles.statusBadge, b.status === 'COMPLETED' ? styles.statusCompleted : b.status === 'CONFIRMED' ? styles.statusConfirmed : b.status === 'PENDING' ? styles.statusPending : styles.statusCancelled]}>
                               <Text style={styles.statusText}>{b.status}</Text>
                            </View>
                            <View style={styles.timeRow}>
@@ -81,32 +123,61 @@ export default function ScheduleScreen() {
                            </View>
                         </View>
 
-                         {b.status === 'CONFIRMED' && (
-                            <TouchableOpacity 
-                               onPress={() => router.push({ pathname: '/(trainer)/workout/[id]', params: { id: b.memberId, bookingId: b.id } } as any)} 
-                               style={styles.planBtn}
-                            >
-                               <Dumbbell color={COLORS.primary} size={16} />
-                               <Text style={styles.planBtnText}>Lên giáo án</Text>
-                            </TouchableOpacity>
-                         )}
+                          {b.status === 'CONFIRMED' && (
+                             <View style={styles.actionRow}>
+                                <TouchableOpacity 
+                                   onPress={() => router.push({ pathname: '/(trainer)/workout/[id]', params: { id: b.memberId, bookingId: b.id } } as any)} 
+                                   style={styles.planBtn}
+                                >
+                                   <Dumbbell color={COLORS.primary} size={16} />
+                                   <Text style={styles.planBtnText}>Giáo án</Text>
+                                </TouchableOpacity>
+                                
+                                <TouchableOpacity 
+                                   onPress={startScan}
+                                   style={styles.scanBtn}
+                                >
+                                   <QrCode color="#fff" size={16} />
+                                   <Text style={styles.scanBtnText}>Quét QR</Text>
+                                </TouchableOpacity>
+                             </View>
+                          )}
 
-                         {b.status === 'PENDING' && (
-                            <View style={styles.actionRow}>
-                               <TouchableOpacity onPress={() => handleUpdateStatus(b.id, 'DECLINED')} style={styles.declineBtn}>
-                                  <X color="#ef4444" size={16} />
-                               </TouchableOpacity>
-                               <TouchableOpacity onPress={() => handleUpdateStatus(b.id, 'CONFIRMED')} style={styles.confirmBtn}>
-                                  <Check color="#fff" size={16} />
-                                  <Text style={styles.confirmBtnText}>Xác nhận</Text>
-                               </TouchableOpacity>
-                            </View>
-                         )}
+                          {b.status === 'PENDING' && (
+                             <View style={styles.actionRow}>
+                                <TouchableOpacity onPress={() => handleUpdateStatus(b.id, 'DECLINED')} style={styles.declineBtn}>
+                                   <X color="#ef4444" size={16} />
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => handleUpdateStatus(b.id, 'CONFIRMED')} style={styles.confirmBtn}>
+                                   <Check color="#fff" size={16} />
+                                   <Text style={styles.confirmBtnText}>Xác nhận</Text>
+                                </TouchableOpacity>
+                             </View>
+                          )}
                      </View>
                   </View>
                );
             })}
          </ScrollView>
+
+         <Modal visible={scannerVisible} animationType="slide">
+            <View style={styles.scannerContainer}>
+               <CameraView
+                  style={StyleSheet.absoluteFillObject}
+                  onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+                  barcodeScannerSettings={{
+                     barcodeTypes: ['qr'],
+                  }}
+               />
+               <View style={styles.scannerOverlay}>
+                  <View style={styles.scanTarget} />
+                  <Text style={styles.scanText}>Quét mã QR của học viên để hoàn thành</Text>
+                  <TouchableOpacity onPress={() => setScannerVisible(false)} style={styles.cancelScanBtn}>
+                     <Text style={styles.cancelScanText}>Hủy bỏ</Text>
+                  </TouchableOpacity>
+               </View>
+            </View>
+         </Modal>
       </SafeAreaView>
    );
 }
@@ -220,6 +291,9 @@ const styles = StyleSheet.create({
    statusCancelled: {
       backgroundColor: 'rgba(239, 68, 68, 0.1)',
    },
+   statusCompleted: {
+      backgroundColor: 'rgba(57, 255, 20, 0.1)',
+   },
    statusText: {
       fontSize: 10,
       fontWeight: '900',
@@ -255,6 +329,7 @@ const styles = StyleSheet.create({
       borderColor: 'rgba(239, 68, 68, 0.2)',
    },
    planBtn: {
+      flex: 1,
       backgroundColor: 'rgba(245, 158, 11, 0.1)',
       paddingVertical: 10,
       borderRadius: 12,
@@ -264,12 +339,62 @@ const styles = StyleSheet.create({
       gap: 8,
       borderWidth: 1,
       borderColor: 'rgba(245, 158, 11, 0.2)',
-      marginTop: 4,
    },
    planBtnText: {
       color: COLORS.primary,
       fontWeight: '800',
       fontSize: 13,
+   },
+   scanBtn: {
+      flex: 1.2,
+      backgroundColor: '#22c55e',
+      paddingVertical: 10,
+      borderRadius: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+   },
+   scanBtnText: {
+      color: '#fff',
+      fontWeight: '800',
+      fontSize: 13,
+   },
+   scannerContainer: {
+      flex: 1,
+      backgroundColor: '#000',
+   },
+   scannerOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+   },
+   scanTarget: {
+      width: 250,
+      height: 250,
+      borderWidth: 2,
+      borderColor: '#39FF14',
+      backgroundColor: 'transparent',
+      borderRadius: 24,
+   },
+   scanText: {
+      color: '#fff',
+      marginTop: 24,
+      fontSize: 16,
+      fontWeight: '700',
+      textAlign: 'center',
+      paddingHorizontal: 40,
+   },
+   cancelScanBtn: {
+      marginTop: 40,
+      paddingHorizontal: 32,
+      paddingVertical: 12,
+      borderRadius: 20,
+      backgroundColor: 'rgba(255,255,255,0.1)',
+   },
+   cancelScanText: {
+      color: '#fff',
+      fontWeight: '800',
    }
 });
-

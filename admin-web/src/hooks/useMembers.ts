@@ -4,7 +4,7 @@ import { PaginationResponse, UserType } from '@/types';
 
 export const useMembers = (initialPage = 1) => {
   const [members, setMembers] = useState<UserType.User[]>([]);
-  const [pagination, setPagination] = useState({ total: 0, totalPages: 1, page: initialPage });
+  const [pagination, setPagination] = useState({ total: 0, totalPages: 1, page: initialPage, limit: 10 });
   const [loading, setLoading] = useState(true);
 
   const fetchMembers = useCallback(async (page: number) => {
@@ -15,7 +15,8 @@ export const useMembers = (initialPage = 1) => {
       setPagination({
         total: res.total,
         totalPages: Math.ceil(res.total / res.limit),
-        page: res.page
+        page: res.page,
+        limit: res.limit
       });
     } finally {
       setLoading(false);
@@ -28,6 +29,18 @@ export const useMembers = (initialPage = 1) => {
     return newUser;
   };
 
+  const updateMember = async (id: number, data: Partial<UserType.User>) => {
+    await userService.updateUser(id, data);
+    await fetchMembers(pagination.page);
+  };
+
+  const deleteMember = async (id: number) => {
+    if (confirm('Bạn có chắc chắn muốn xóa hội viên này? Dữ liệu sẽ không thể khôi phục.')) {
+      await userService.deleteUser(id);
+      await fetchMembers(pagination.page);
+    }
+  };
+
   useEffect(() => {
     fetchMembers(initialPage);
   }, [fetchMembers, initialPage]);
@@ -38,6 +51,8 @@ export const useMembers = (initialPage = 1) => {
     loading, 
     refresh: () => fetchMembers(pagination.page), 
     setPage: fetchMembers,
-    createMember 
+    createMember,
+    updateMember,
+    deleteMember
   };
 };

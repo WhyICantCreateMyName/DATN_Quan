@@ -173,7 +173,7 @@ router.put('/profile', async (req: Request, res: Response) => {
     const ptId = getPtId(req);
     if (!ptId) return res.status(401).json({ error: 'Unauthorized PT' });
 
-    const { fullName, avatarBase64, specialization, bio, height, weight, bodyFat } = req.body;
+    const { fullName, avatarUrl, specialization, bio, height, weight, bodyFat } = req.body;
 
     // Update User (FullName)
     const user = await prisma.user.update({
@@ -185,7 +185,7 @@ router.put('/profile', async (req: Request, res: Response) => {
     const profile = await prisma.trainerProfile.update({
       where: { userId: ptId },
       data: {
-        avatarBase64,
+        avatarUrl,
         specialization,
         bio,
         height: height ? Number(height) : null,

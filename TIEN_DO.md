@@ -19,7 +19,7 @@ Dựa trên tài liệu `Nghiệp_vụ.txt` và kiến trúc hệ thống hiện
 - [x] **Thời khóa biểu PT:** Quản lý danh sách các buổi dạy trong ngày.
 - [x] **Quản lý lịch rảnh (Availability):** Khai báo giờ rảnh để khách đặt lịch.
 - [x] **Nhật ký giáo án:** Ghi chú bài tập chi tiết cho từng học viên (Đã đồng bộ sang Member App).
-- [ ] **Xác nhận buổi tập:** Cơ chế quét mã xác nhận trừ buổi của khách.
+- [x] **Xác nhận buổi tập:** Cơ chế quét mã xác nhận trừ buổi của khách.
 
 ## 3. Phân hệ LANDING PAGE (Public - Gộp vào Admin Web)
 - [x] **Giao diện Giới thiệu:** Khám phá cơ sở vật chất, Đội ngũ PT và giá trị cốt lõi.

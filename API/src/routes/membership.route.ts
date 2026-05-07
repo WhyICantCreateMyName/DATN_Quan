@@ -32,7 +32,12 @@ router.get('/plans', async (req: Request, res: Response) => {
       orderBy: { id: 'desc' }
     });
 
-    res.json({ data: plans, page, limit, total });
+    res.json({ 
+      data: plans, 
+      total,
+      page,
+      limit
+    });
   } catch (error) {
     res.status(500).json({ error: 'Lỗi lấy gói' });
   }

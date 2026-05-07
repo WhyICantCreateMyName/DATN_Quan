@@ -24,7 +24,7 @@ export default function ProfileScreen() {
    const router = useRouter();
    const [profile, setProfile] = useState<any>(null);
    const [isEditing, setIsEditing] = useState(false);
-   const [form, setForm] = useState({ fullName: '', specialization: '', height: '', weight: '', bodyFat: '', avatarBase64: '' });
+   const [form, setForm] = useState({ fullName: '', specialization: '', height: '', weight: '', bodyFat: '', avatarUrl: '' });
 
    const load = () => {
       authService.getMe().then(data => {
@@ -36,7 +36,7 @@ export default function ProfileScreen() {
             height: tr.height ? tr.height.toString() : '',
             weight: tr.weight ? tr.weight.toString() : '',
             bodyFat: tr.bodyFat ? tr.bodyFat.toString() : '',
-            avatarBase64: tr.avatarBase64 || ''
+            avatarUrl: tr.avatarUrl || ''
          });
       }).catch(() => null);
    };
@@ -56,7 +56,7 @@ export default function ProfileScreen() {
          allowsEditing: true, aspect: [1, 1], quality: 0.3, base64: true,
       });
       if (!result.canceled && result.assets[0].base64) {
-         setForm({ ...form, avatarBase64: `data:image/jpeg;base64,${result.assets[0].base64}` });
+         setForm({ ...form, avatarUrl: `data:image/jpeg;base64,${result.assets[0].base64}` });
       }
    };
 
@@ -74,7 +74,7 @@ export default function ProfileScreen() {
             <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
                <View style={styles.avatarPickerSection}>
                   <TouchableOpacity onPress={pickImage} style={styles.avatarPicker}>
-                     {form.avatarBase64 ? <Image source={{ uri: form.avatarBase64 }} style={styles.avatarLarge} /> : <Camera color={COLORS.primary} size={32} />}
+                     {form.avatarUrl ? <Image source={{ uri: form.avatarUrl }} style={styles.avatarLarge} /> : <Camera color={COLORS.primary} size={32} />}
                   </TouchableOpacity>
                   <Text style={styles.avatarPickerLabel}>Đổi Avatar</Text>
                </View>
@@ -127,8 +127,8 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             <View style={styles.avatarFrame}>
-               {profile?.trainerProfile?.avatarBase64 ?
-                  <Image source={{ uri: profile.trainerProfile.avatarBase64 }} style={styles.avatarLarge} /> :
+               {profile?.trainerProfile?.avatarUrl ?
+                  <Image source={{ uri: profile.trainerProfile.avatarUrl }} style={styles.avatarLarge} /> :
                   <UserCircle2 color={COLORS.primary} size={48} />
                }
             </View>

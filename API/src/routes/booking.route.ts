@@ -20,7 +20,12 @@ router.get('/classes', async (req: Request, res: Response) => {
       orderBy: { startTime: 'desc' }
     });
 
-    res.json({ data: groupClasses, page, limit, total });
+    res.json({ 
+      data: groupClasses, 
+      total,
+      page,
+      limit
+    });
   } catch (error) {
     res.status(500).json({ error: 'Lỗi lấy danh sách lớp' });
   }
@@ -197,6 +202,72 @@ router.patch('/:id', async (req: Request, res: Response) => {
 
     res.json(booking);
   } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// --- XÁC NHẬN HOÀN THÀNH BUỔI TẬP (QUÉT MÃ QR) ---
+router.post('/:id/complete-with-qr', async (req: Request, res: Response) => {
+  try {
+    const bookingId = Number(req.params.id);
+    const { trainerId } = req.body; // Lấy từ token của PT
+
+    // 1. Kiểm tra booking
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { 
+        member: { include: { user: true } },
+        trainer: true 
+      }
+    });
+
+    if (!booking) return res.status(404).json({ error: 'Không tìm thấy lịch hẹn' });
+    if (booking.status === 'COMPLETED') return res.status(400).json({ error: 'Buổi tập đã được xác nhận hoàn thành trước đó' });
+    if (booking.trainerId !== Number(trainerId)) {
+      return res.status(403).json({ error: 'Bạn không có quyền xác nhận cho buổi tập của PT khác' });
+    }
+
+    // 2. Thực hiện trừ buổi và cập nhật trạng thái (Atomic Transaction)
+    const result = await prisma.$transaction(async (tx) => {
+      // Giảm số buổi tập còn lại của học viên
+      const updatedProfile = await tx.memberProfile.update({
+        where: { id: booking.memberId },
+        data: { 
+          remainingPtSessions: { decrement: 1 } 
+        }
+      });
+
+      if (updatedProfile.remainingPtSessions < 0) {
+        throw new Error('Học viên đã hết số buổi tập trong gói. Vui lòng nhắc học viên gia hạn.');
+      }
+
+      // Cập nhật trạng thái booking
+      const updatedBooking = await tx.booking.update({
+        where: { id: bookingId },
+        data: { status: 'COMPLETED' }
+      });
+
+      // Ghi nhận hoa hồng cho PT (Ví dụ: mặc định 50,000 VNĐ mỗi buổi dạy)
+      // Trong thực tế sẽ lấy từ bảng CommissionRate
+      await tx.commissionLog.create({
+        data: {
+          userId: booking.trainer?.userId || 0,
+          amount: 50000,
+          reason: `Hoàn thành buổi dạy cho học viên ${booking.member.user.fullName}`,
+          bookingId: booking.id
+        }
+      });
+
+      return { updatedBooking, updatedProfile };
+    });
+
+    res.json({
+      message: 'Xác nhận hoàn thành buổi tập thành công',
+      data: result
+    });
+
+  } catch (error: any) {
+    console.error('Complete Booking Error:', error);
     res.status(400).json({ error: error.message });
   }
 });

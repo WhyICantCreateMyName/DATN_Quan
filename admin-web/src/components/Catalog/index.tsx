@@ -8,6 +8,7 @@ import {
 import { useCatalog } from '@/hooks/useCatalog';
 import { formatVND } from '@/libs/utils';
 import { uploadService } from '@/services/uploadService';
+import Pagination from '../Pagination';
 
 export default function Catalog() {
   const { 
@@ -19,6 +20,7 @@ export default function Catalog() {
   const [activeTab, setActiveTab] = useState<'plans' | 'classes' | 'products'>('plans');
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
 
   // Form States
   const [planForm, setPlanForm] = useState({ name: '', price: 0, durationDays: 30, ptSessions: 0, description: '', tag: '' });
@@ -32,7 +34,7 @@ export default function Catalog() {
       if (activeTab === 'plans') {
         if (editingId) await updatePlan(editingId, planForm);
         else await createPlan(planForm);
-        refreshPlans();
+        refreshPlans(page);
       } else if (activeTab === 'classes') {
         const data = {
           ...classForm,
@@ -41,11 +43,11 @@ export default function Catalog() {
         };
         if (editingId) await updateClass(editingId, data);
         else await createClass(data);
-        refreshClasses();
+        refreshClasses(page);
       } else {
         if (editingId) await updateProduct(editingId, prodForm);
         else await createProduct(prodForm);
-        refreshProducts();
+        refreshProducts(page);
       }
       setShowModal(false);
       setEditingId(null);
@@ -74,9 +76,9 @@ export default function Catalog() {
         </div>
         
         <div className="flex bg-gray-900 p-1 rounded-xl border border-gray-800">
-           <button onClick={()=>setActiveTab('plans')} className={`px-6 py-2 rounded-lg text-sm font-bold transition ${activeTab === 'plans' ? 'bg-[#39FF14] text-black' : 'text-gray-400 hover:text-white'}`}>Gói Tập</button>
-           <button onClick={()=>setActiveTab('classes')} className={`px-6 py-2 rounded-lg text-sm font-bold transition ${activeTab === 'classes' ? 'bg-[#39FF14] text-black' : 'text-gray-400 hover:text-white'}`}>Lớp Học</button>
-           <button onClick={()=>setActiveTab('products')} className={`px-6 py-2 rounded-lg text-sm font-bold transition ${activeTab === 'products' ? 'bg-[#39FF14] text-black' : 'text-gray-400 hover:text-white'}`}>Sản Phẩm</button>
+           <button onClick={()=>{setActiveTab('plans'); setPage(1);}} className={`px-6 py-2 rounded-lg text-sm font-bold transition ${activeTab === 'plans' ? 'bg-[#39FF14] text-black' : 'text-gray-400 hover:text-white'}`}>Gói Tập</button>
+           <button onClick={()=>{setActiveTab('classes'); setPage(1);}} className={`px-6 py-2 rounded-lg text-sm font-bold transition ${activeTab === 'classes' ? 'bg-[#39FF14] text-black' : 'text-gray-400 hover:text-white'}`}>Lớp Học</button>
+           <button onClick={()=>{setActiveTab('products'); setPage(1);}} className={`px-6 py-2 rounded-lg text-sm font-bold transition ${activeTab === 'products' ? 'bg-[#39FF14] text-black' : 'text-gray-400 hover:text-white'}`}>Sản Phẩm</button>
         </div>
       </div>
 
@@ -99,147 +101,171 @@ export default function Catalog() {
            {loading && <div className="h-full flex items-center justify-center text-gray-500 animate-pulse">Đang đồng bộ dữ liệu...</div>}
            
            {!loading && activeTab === 'plans' && (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-               {plans?.data.map((p) => (
-                 <div key={p.id} className="bg-gray-800/40 border border-gray-700 p-6 rounded-[2rem] hover:border-[#39FF14]/50 transition-all group relative overflow-hidden">
-                   <div className="absolute top-0 right-0 p-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        onClick={() => {
-                          setPlanForm({ name: p.name, price: p.price, durationDays: p.durationDays, ptSessions: p.ptSessions, description: p.description || '', tag: p.tag || '' });
-                          setEditingId(p.id);
-                          setShowModal(true);
-                        }}
-                        className="bg-gray-900 p-2 rounded-lg text-[#39FF14] hover:bg-[#39FF14] hover:text-black transition"
-                      >
-                        <Edit2 size={16}/>
-                      </button>
-                      <button onClick={() => deleteItem('plan', p.id)} className="bg-gray-900 p-2 rounded-lg text-red-500 hover:bg-red-500 hover:text-white transition">
-                        <Trash2 size={16}/>
-                      </button>
-                   </div>
-                   <div className="p-4 bg-[#39FF14]/10 rounded-2xl text-[#39FF14] w-fit mb-6">
-                     <Tag size={32} />
-                   </div>
-                    <div className="flex justify-between items-start mb-2">
-                       <h3 className="text-2xl font-black text-white uppercase tracking-tight">{p.name}</h3>
-                       {p.tag && (
-                         <span className="px-3 py-1 bg-gray-900 border border-gray-700 text-[#39FF14] text-[10px] font-black rounded-lg">
-                           {p.tag === 'GOLD' ? 'GOLD' : p.tag === 'DIAMOND' ? 'DIAMOND' : p.tag === 'PT_ADDON' ? 'PT ADD-ON' : p.tag}
-                         </span>
-                       )}
-                    </div>
-                   <p className="text-gray-400 text-sm mb-8 line-clamp-2 min-h-[40px]">{p.description || 'Hệ thống chưa cập nhật mô tả cho gói này.'}</p>
-                   <div className="flex justify-between items-end border-t border-gray-700 pt-6">
-                      {p.tag !== 'PT_ADDON' && (
-                        <div>
-                          <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">Thời hạn tập</p>
-                          <p className="text-white font-bold text-lg">{p.durationDays} ngày</p>
-                        </div>
-                      )}
-                      {p.ptSessions > 0 && (
-                        <div className={p.tag === 'PT_ADDON' ? 'text-left' : 'text-center'}>
-                           <p className="text-[10px] text-[#39FF14] uppercase font-black tracking-widest mb-1">
-                              {p.tag === 'PT_ADDON' ? 'Số buổi PT' : 'PT Kèm'}
-                           </p>
-                           <p className="text-white font-bold text-lg flex items-center gap-1 justify-center">
-                              <Dumbbell size={14} className="text-[#39FF14]"/> {p.ptSessions} buổi
-                           </p>
-                        </div>
-                      )}
-                      <div className="text-right">
-                        <p className="text-[#39FF14] text-3xl font-black italic">{formatVND(p.price)}</p>
+             <div className="space-y-8">
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                 {plans?.data.map((p) => (
+                   <div key={p.id} className="bg-gray-800/40 border border-gray-700 p-6 rounded-[2rem] hover:border-[#39FF14]/50 transition-all group relative overflow-hidden">
+                     <div className="absolute top-0 right-0 p-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => {
+                            setPlanForm({ name: p.name, price: p.price, durationDays: p.durationDays, ptSessions: p.ptSessions, description: p.description || '', tag: p.tag || '' });
+                            setEditingId(p.id);
+                            setShowModal(true);
+                          }}
+                          className="bg-gray-900 p-2 rounded-lg text-[#39FF14] hover:bg-[#39FF14] hover:text-black transition"
+                        >
+                          <Edit2 size={16}/>
+                        </button>
+                        <button onClick={() => deleteItem('plan', p.id)} className="bg-gray-900 p-2 rounded-lg text-red-500 hover:bg-red-500 hover:text-white transition">
+                          <Trash2 size={16}/>
+                        </button>
+                     </div>
+                     <div className="p-4 bg-[#39FF14]/10 rounded-2xl text-[#39FF14] w-fit mb-6">
+                       <Tag size={32} />
+                     </div>
+                      <div className="flex justify-between items-start mb-2">
+                         <h3 className="text-2xl font-black text-white uppercase tracking-tight">{p.name}</h3>
+                         {p.tag && (
+                           <span className="px-3 py-1 bg-gray-900 border border-gray-700 text-[#39FF14] text-[10px] font-black rounded-lg">
+                             {p.tag === 'GOLD' ? 'GOLD' : p.tag === 'DIAMOND' ? 'DIAMOND' : p.tag === 'PT_ADDON' ? 'PT ADD-ON' : p.tag}
+                           </span>
+                         )}
                       </div>
+                     <p className="text-gray-400 text-sm mb-8 line-clamp-2 min-h-[40px]">{p.description || 'Hệ thống chưa cập nhật mô tả cho gói này.'}</p>
+                     <div className="flex justify-between items-end border-t border-gray-700 pt-6">
+                        {p.tag !== 'PT_ADDON' && (
+                          <div>
+                            <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">Thời hạn tập</p>
+                            <p className="text-white font-bold text-lg">{p.durationDays} ngày</p>
+                          </div>
+                        )}
+                        {p.ptSessions > 0 && (
+                          <div className={p.tag === 'PT_ADDON' ? 'text-left' : 'text-center'}>
+                             <p className="text-[10px] text-[#39FF14] uppercase font-black tracking-widest mb-1">
+                                {p.tag === 'PT_ADDON' ? 'Số buổi PT' : 'PT Kèm'}
+                             </p>
+                             <p className="text-white font-bold text-lg flex items-center gap-1 justify-center">
+                                <Dumbbell size={14} className="text-[#39FF14]"/> {p.ptSessions} buổi
+                             </p>
+                          </div>
+                        )}
+                        <div className="text-right">
+                          <p className="text-[#39FF14] text-3xl font-black italic">{formatVND(p.price)}</p>
+                        </div>
+                     </div>
                    </div>
-                 </div>
-               ))}
+                 ))}
+               </div>
+               <Pagination 
+                 currentPage={page} 
+                 totalItems={plans?.total || 0} 
+                 limit={plans?.limit || 10} 
+                 onPageChange={(p) => { setPage(p); refreshPlans(p); }} 
+               />
              </div>
            )}
 
            {!loading && activeTab === 'classes' && (
-              <div className="bg-gray-800/30 rounded-3xl border border-gray-800 overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-gray-800/50">
-                    <tr className="text-gray-500 text-[10px] font-black uppercase tracking-widest">
-                      <th className="p-6">Lớp học</th>
-                      <th className="p-6">Thời gian</th>
-                      <th className="p-6">Sĩ số</th>
-                      <th className="p-6">Trạng thái</th>
-                      <th className="p-6 text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-800/50">
-                    {classes?.data.map((c) => (
-                      <tr key={c.id} className="hover:bg-gray-800/20 transition-colors group">
-                        <td className="p-6 font-bold text-white text-lg">{c.name}</td>
-                        <td className="p-6 text-gray-300 font-mono">
-                          {new Date(c.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - {new Date(c.endTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                        </td>
-                        <td className="p-6 text-white font-bold"><Users size={16} className="inline mr-2 text-gray-500"/> {c.capacity}</td>
-                        <td className="p-6">
-                          <span className="px-4 py-1 bg-[#39FF14]/10 text-[#39FF14] rounded-full text-[10px] font-black uppercase">Sắp diễn ra</span>
-                        </td>
-                        <td className="p-6 text-right">
-                          <div className="flex justify-end gap-2">
-                            <button 
-                              onClick={() => {
-                                setClassForm({ 
-                                  name: c.name, 
-                                  capacity: c.capacity, 
-                                  startTime: new Date(c.startTime).toISOString().slice(0, 16), 
-                                  endTime: new Date(c.endTime).toISOString().slice(0, 16) 
-                                });
-                                setEditingId(c.id);
-                                setShowModal(true);
-                              }}
-                              className="p-2 text-gray-500 hover:text-[#39FF14] transition"
-                            >
-                              <Edit2 size={16}/>
-                            </button>
-                            <button onClick={() => deleteItem('class', c.id)} className="p-2 text-gray-500 hover:text-red-500 transition">
-                              <Trash2 size={16}/>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+             <div className="space-y-8">
+               <div className="bg-gray-800/30 rounded-3xl border border-gray-800 overflow-hidden">
+                 <table className="w-full text-left border-collapse">
+                   <thead className="bg-gray-800/50">
+                     <tr className="text-gray-500 text-[10px] font-black uppercase tracking-widest">
+                       <th className="p-6">Lớp học</th>
+                       <th className="p-6">Thời gian</th>
+                       <th className="p-6">Sĩ số</th>
+                       <th className="p-6">Trạng thái</th>
+                       <th className="p-6 text-right">Thao tác</th>
+                     </tr>
+                   </thead>
+                   <tbody className="divide-y divide-gray-800/50">
+                     {classes?.data.map((c) => (
+                       <tr key={c.id} className="hover:bg-gray-800/20 transition-colors group">
+                         <td className="p-6 font-bold text-white text-lg">{c.name}</td>
+                         <td className="p-6 text-gray-300 font-mono">
+                           {new Date(c.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - {new Date(c.endTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                         </td>
+                         <td className="p-6 text-white font-bold"><Users size={16} className="inline mr-2 text-gray-500"/> {c.capacity}</td>
+                         <td className="p-6">
+                           <span className="px-4 py-1 bg-[#39FF14]/10 text-[#39FF14] rounded-full text-[10px] font-black uppercase">Sắp diễn ra</span>
+                         </td>
+                         <td className="p-6 text-right">
+                           <div className="flex justify-end gap-2">
+                             <button 
+                               onClick={() => {
+                                 setClassForm({ 
+                                   name: c.name, 
+                                   capacity: c.capacity, 
+                                   startTime: new Date(c.startTime).toISOString().slice(0, 16), 
+                                   endTime: new Date(c.endTime).toISOString().slice(0, 16) 
+                                 });
+                                 setEditingId(c.id);
+                                 setShowModal(true);
+                               }}
+                               className="p-2 text-gray-500 hover:text-[#39FF14] transition"
+                             >
+                               <Edit2 size={16}/>
+                             </button>
+                             <button onClick={() => deleteItem('class', c.id)} className="p-2 text-gray-500 hover:text-red-500 transition">
+                               <Trash2 size={16}/>
+                             </button>
+                           </div>
+                         </td>
+                       </tr>
+                     ))}
+                   </tbody>
+                 </table>
+               </div>
+               <Pagination 
+                 currentPage={page} 
+                 totalItems={classes?.total || 0} 
+                 limit={classes?.limit || 10} 
+                 onPageChange={(p) => { setPage(p); refreshClasses(p); }} 
+               />
+             </div>
            )}
 
            {!loading && activeTab === 'products' && (
-             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
-               {products?.data.map((p) => (
-                 <div key={p.id} className="bg-gray-800/40 border border-gray-700 p-5 rounded-[2rem] flex flex-col items-center group relative hover:border-[#39FF14]/50 transition-all">
-                   <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                      <button 
-                        onClick={() => {
-                          setProdForm({ name: p.name, price: p.price, stock: p.stock, imageUrl: p.imageUrl || '' });
-                          setEditingId(p.id);
-                          setShowModal(true);
-                        }}
-                        className="bg-gray-900 p-2 rounded-lg text-[#39FF14] hover:bg-[#39FF14] hover:text-black transition"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button onClick={() => deleteItem('prod', p.id)} className="bg-gray-900 p-2 rounded-lg text-red-500 hover:bg-red-500 hover:text-white transition">
-                        <Trash2 size={14} />
-                      </button>
+             <div className="space-y-8">
+               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+                 {products?.data.map((p) => (
+                   <div key={p.id} className="bg-gray-800/40 border border-gray-700 p-5 rounded-[2rem] flex flex-col items-center group relative hover:border-[#39FF14]/50 transition-all">
+                     <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <button 
+                          onClick={() => {
+                            setProdForm({ name: p.name, price: p.price, stock: p.stock, imageUrl: p.imageUrl || '' });
+                            setEditingId(p.id);
+                            setShowModal(true);
+                          }}
+                          className="bg-gray-900 p-2 rounded-lg text-[#39FF14] hover:bg-[#39FF14] hover:text-black transition"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button onClick={() => deleteItem('prod', p.id)} className="bg-gray-900 p-2 rounded-lg text-red-500 hover:bg-red-500 hover:text-white transition">
+                          <Trash2 size={14} />
+                        </button>
+                     </div>
+                     <div className="w-full aspect-square bg-gray-900 rounded-3xl mb-6 flex items-center justify-center text-gray-700 group-hover:text-[#39FF14] transition-colors overflow-hidden border border-gray-800">
+                       {p.imageUrl ? (
+                         <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                       ) : (
+                         <Package size={64} />
+                       )}
+                     </div>
+                     <h4 className="text-white font-bold text-center mb-1 text-lg line-clamp-1">{p.name}</h4>
+                     <p className="text-[#39FF14] font-black text-xl mb-4 italic">{formatVND(p.price)}</p>
+                     <div className="w-full bg-gray-900/50 p-2 rounded-xl flex justify-center">
+                       <span className="text-[10px] text-gray-500 uppercase font-black">Tồn kho: {p.stock}</span>
+                     </div>
                    </div>
-                   <div className="w-full aspect-square bg-gray-900 rounded-3xl mb-6 flex items-center justify-center text-gray-700 group-hover:text-[#39FF14] transition-colors overflow-hidden border border-gray-800">
-                     {p.imageUrl ? (
-                       <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                     ) : (
-                       <Package size={64} />
-                     )}
-                   </div>
-                   <h4 className="text-white font-bold text-center mb-1 text-lg line-clamp-1">{p.name}</h4>
-                   <p className="text-[#39FF14] font-black text-xl mb-4 italic">{formatVND(p.price)}</p>
-                   <div className="w-full bg-gray-900/50 p-2 rounded-xl flex justify-center">
-                     <span className="text-[10px] text-gray-500 uppercase font-black">Tồn kho: {p.stock}</span>
-                   </div>
-                 </div>
-               ))}
+                 ))}
+               </div>
+               <Pagination 
+                 currentPage={page} 
+                 totalItems={products?.total || 0} 
+                 limit={products?.limit || 10} 
+                 onPageChange={(p) => { setPage(p); refreshProducts(p); }} 
+               />
              </div>
            )}
         </div>

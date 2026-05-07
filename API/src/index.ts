@@ -29,7 +29,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: true, // Allow ngrok and expo
+  origin: true,
   credentials: true
 }));
 app.use(express.json());

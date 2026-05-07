@@ -40,12 +40,9 @@ router.get('/', async (req: Request, res: Response) => {
 
     res.json({
       data: users,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit)
-      }
+      total,
+      page,
+      limit
     });
   } catch (error) {
     res.status(500).json({ error: 'Lỗi khi lấy danh sách user' });
@@ -68,9 +65,10 @@ router.post('/', async (req: Request, res: Response) => {
         passwordHash: password, // Todo: mã hoá bcrypt
         fullName,
         role: role || 'MEMBER',
-        memberProfile: (role === 'MEMBER' || !role) ? { create: {} } : undefined,
+        memberProfile: (role === 'MEMBER' || role === 'RECEPTIONIST' || role === 'ADMIN' || !role) ? { create: {} } : undefined,
         trainerProfile: role === 'PT' ? { create: { specialization: 'General' } } : undefined
-      }
+      },
+      include: { memberProfile: true, trainerProfile: true }
     });
     res.json(user);
   } catch (error: any) {
@@ -104,13 +102,57 @@ router.patch('/:id/profile', async (req: Request, res: Response) => {
     const userId = Number(req.params.id);
     const { avatarUrl, fingerprintId } = req.body;
     
-    const profile = await prisma.memberProfile.update({
-      where: { userId },
-      data: { avatarUrl, fingerprintId }
-    });
+    // Tìm user để biết role
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'User không tồn tại' });
+
+    let profile;
+    if (user.role === 'PT') {
+      profile = await prisma.trainerProfile.upsert({
+        where: { userId },
+        update: { avatarUrl },
+        create: { userId, avatarUrl, specialization: 'General' }
+      });
+    } else {
+      profile = await prisma.memberProfile.upsert({
+        where: { userId },
+        update: { avatarUrl, fingerprintId },
+        create: { userId, avatarUrl, fingerprintId }
+      });
+    }
+    
     res.json(profile);
   } catch (error: any) {
+    console.error('Update Profile Error:', error);
     res.status(400).json({ error: error.message });
+  }
+});
+
+// Cập nhật thông tin chung User
+router.patch('/:id', async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const { fullName, phone, role, isActive } = req.body;
+    const user = await prisma.user.update({
+      where: { id },
+      data: { fullName, phone, role, isActive }
+    });
+    res.json(user);
+  } catch (error: any) {
+    console.error('Update User Error:', error);
+    res.status(400).json({ error: 'Lỗi cập nhật user: ' + error.message });
+  }
+});
+
+// Xóa User
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    await prisma.user.delete({ where: { id } });
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Delete User Error:', error);
+    res.status(400).json({ error: 'Lỗi khi xóa user: ' + error.message });
   }
 });
 

@@ -8,7 +8,8 @@ export type User = Prisma.UserGetPayload<{
           include: { plan: true }
         }
       }
-    }
+    },
+    trainerProfile: true
   }
 }>;
 

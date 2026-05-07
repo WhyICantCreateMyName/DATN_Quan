@@ -15,6 +15,7 @@ export const trainerService = {
    getAvailability: () => apiClient.get('/trainer/availability').then(res => res.data),
    updateAvailability: (slots: any[]) => apiClient.post('/trainer/availability', { slots }).then(res => res.data),
    updateBookingStatus: (id: number, status: string) => apiClient.patch(`/bookings/${id}`, { status }).then(res => res.data),
+   completeWithQR: (id: number, trainerId: number) => apiClient.post(`/bookings/${id}/complete-with-qr`, { trainerId }).then(res => res.data),
 };
 
 export const metricsService = {
