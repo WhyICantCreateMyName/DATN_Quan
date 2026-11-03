@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Bắt đầu dọn dẹp và khởi tạo dữ liệu mẫu (Seeding)...');
 
-  await prisma.workoutLogExercise.deleteMany();
+  await prisma.workoutExercise.deleteMany();
   await prisma.workoutLog.deleteMany();
   await prisma.booking.deleteMany();
   await prisma.checkIn.deleteMany();
