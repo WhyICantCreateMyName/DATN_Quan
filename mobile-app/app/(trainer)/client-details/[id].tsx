@@ -6,14 +6,14 @@ import { trainerService } from '@/services/trainerApi';
 import { ChevronLeft, Calendar, Dumbbell, History, Activity, User, Phone, Award } from 'lucide-react-native';
 
 const COLORS = {
-  background: '#020617',
-  card: '#0f172a',
-  primary: '#f59e0b',
-  secondary: '#0ea5e9',
-  textMain: '#ffffff',
-  textSecondary: '#94a3b8',
-  border: '#1e293b',
-  success: '#10b981'
+  background: '#0E100F',
+  card: '#1A1D1B',
+  primary: '#C8F135',
+  secondary: '#FF5A36',
+  textMain: '#F4F5F0',
+  textSecondary: '#8E9490',
+  border: '#282C29',
+  success: '#C8F135'
 };
 
 export default function ClientDetailsScreen() {

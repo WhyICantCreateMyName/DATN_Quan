@@ -4,13 +4,13 @@ import Svg, { Polygon, Line, Text as SvgText } from 'react-native-svg';
 import { useInbody } from '@/hooks/useInbody';
 
 const COLORS = {
-   background: '#020617',
-   card: '#0f172a',
-   primary: '#0ea5e9',
-   textMain: '#ffffff',
-   textSecondary: '#94a3b8',
-   border: '#1e293b',
-   chartAxis: '#334155'
+   background: '#0E100F',
+   card: '#1A1D1B',
+   primary: '#C8F135',
+   textMain: '#F4F5F0',
+   textSecondary: '#8E9490',
+   border: '#282C29',
+   chartAxis: '#343A36'
 };
 
 // Custom Radar Config
@@ -63,8 +63,8 @@ export default function InbodyScreen() {
                               </View>
                            );
                         })}
-                        <Polygon points={matrixPoints} fill="none" stroke={COLORS.chartAxis} strokeWidth="2" strokeDasharray="3,3" />
-                        <Polygon points={polygonPoints} fill="rgba(14, 165, 233, 0.3)" stroke={COLORS.primary} strokeWidth="3" />
+                        <Polygon points={matrixPoints} fill="none" stroke={COLORS.chartAxis} strokeWidth="1.5" strokeDasharray="3,3" />
+                        <Polygon points={polygonPoints} fill="rgba(200, 241, 53, 0.2)" stroke={COLORS.primary} strokeWidth="2.5" />
                      </Svg>
                   </View>
 
@@ -184,11 +184,11 @@ const styles = StyleSheet.create({
       fontSize: 24,
    },
    footerText: {
-      color: '#475569',
+      color: COLORS.textSecondary,
       marginTop: 24,
-      fontSize: 13,
+      fontSize: 12,
       textAlign: 'center',
-      lineHeight: 20,
+      lineHeight: 18,
    },
    emptyState: {
       alignItems: 'center',
@@ -196,17 +196,17 @@ const styles = StyleSheet.create({
       paddingHorizontal: 32,
    },
    emptyTitle: {
-      color: COLORS.textSecondary,
+      color: COLORS.textMain,
       fontWeight: '800',
       fontSize: 18,
       marginBottom: 8,
       textAlign: 'center',
    },
    emptySubtitle: {
-      color: '#475569',
+      color: COLORS.textSecondary,
       textAlign: 'center',
-      fontSize: 14,
-      lineHeight: 22,
+      fontSize: 13,
+      lineHeight: 20,
    }
 });
 

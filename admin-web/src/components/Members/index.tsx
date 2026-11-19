@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PlusCircle, Camera, Edit2, Trash2, Snowflake, ArrowRightLeft } from 'lucide-react';
+import { PlusCircle, Camera, Edit2, Trash2, Snowflake, User, X } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { useMembers } from '@/hooks/useMembers';
 import { userService } from '@/services/userService';
@@ -38,7 +38,7 @@ export default function Members() {
         if (form.avatarUrl && newUser.id) {
           await userService.updateProfile(newUser.id, { avatarUrl: form.avatarUrl });
         }
-        showToast('Thêm thành công Hội Viên mới (Mật khẩu mặc định: 123)', 'success');
+        showToast('Thêm thành công Hội Viên mới (Mật khẩu: 123)', 'success');
       }
       setShowModal(false);
       setEditingId(null);
@@ -54,182 +54,262 @@ export default function Members() {
       fullName: m.fullName,
       phone: m.phone,
       password: '',
-      avatarUrl: m.memberProfile?.avatarUrl || '',
+      avatarUrl: m.avatarUrl || m.memberProfile?.avatarUrl || '',
       role: m.role
     });
     setShowModal(true);
   };
 
   return (
-    <div className="relative h-full flex flex-col">
-      <div className="flex justify-between items-center mb-8">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black uppercase tracking-tight italic">Hồ Sơ <span className="text-[#39FF14]">Hội Viên</span></h1>
-          <p className="text-gray-400">Quản lý Khách Hàng, Gói Tập và Trạng Thái Thẻ.</p>
+          <h1 className="text-2xl font-black text-[#18181B] tracking-tight">Hồ Sơ Hội Viên</h1>
+          <p className="text-xs text-[#6E6E77] mt-1">
+            Quản lý danh sách khách hàng, tình trạng gói tập và lịch sử thành viên.
+          </p>
         </div>
-        <button 
-          onClick={() => { setEditingId(null); setForm({ phone: '', fullName: '', password: '123', avatarUrl: '', role: 'MEMBER' }); setShowModal(true); }}
-          className="bg-[#39FF14] text-black font-black px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-white transition-all shadow-[0_0_20px_rgba(57,255,20,0.2)]"
+        <button
+          onClick={() => {
+            setEditingId(null);
+            setForm({ phone: '', fullName: '', password: '123', avatarUrl: '', role: 'MEMBER' });
+            setShowModal(true);
+          }}
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-[#EA580C] hover:bg-[#EA580C]/90 shadow-sm shadow-[#EA580C]/20 transition-all cursor-pointer whitespace-nowrap"
         >
-          <PlusCircle className="w-5 h-5"/> KHỞI TẠO HỒ SƠ
+          <PlusCircle className="w-4 h-4" /> Khởi Tạo Hồ Sơ
         </button>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-[2.5rem] flex flex-col flex-1 overflow-hidden relative">
-        <div className="flex-1 overflow-y-auto">
-          <table className="w-full text-left border-collapse relative">
-            <thead className="sticky top-0 bg-gray-900 z-10">
-              <tr className="bg-gray-800/40 text-gray-500 text-[10px] font-black uppercase tracking-widest border-b border-gray-800">
-                <th className="p-6 pl-8">Mã HV</th>
-                <th className="p-6">Hội Viên</th>
-                <th className="p-6">Số Điện Thoại</th>
-                <th className="p-6">Gói Đang Tập</th>
-                <th className="p-6 text-right pr-8">Thao Tác</th>
+      {/* Table Card */}
+      <div className="bg-[#FFFFFF] rounded-2xl border border-[#E4E4E0] shadow-xs overflow-hidden flex flex-col">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-[#E4E4E0] bg-[#F7F7F5] text-[11px] font-bold text-[#6E6E77] uppercase tracking-wider">
+                <th className="py-3 px-6">Mã HV</th>
+                <th className="py-3 px-6">Hội Viên</th>
+                <th className="py-3 px-6">Số Điện Thoại</th>
+                <th className="py-3 px-6">Gói Đang Tập</th>
+                <th className="py-3 px-6 text-right">Thao Tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800/50 text-sm">
+            <tbody className="divide-y divide-[#E4E4E0] text-xs">
               {loading ? (
-                <tr><td colSpan={5} className="p-12 text-center text-gray-500 animate-pulse">Đang đồng bộ dữ liệu...</td></tr>
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-[#6E6E77] animate-pulse">
+                    Đang đồng bộ dữ liệu hội viên...
+                  </td>
+                </tr>
               ) : members.length === 0 ? (
-                <tr><td colSpan={5} className="p-12 text-center text-gray-500 italic">Hệ thống chưa có dữ liệu hội viên.</td></tr>
-              ) : members.map((m) => {
-                const activeSubs = m.memberProfile?.subscriptions?.filter((s: any) => s.status === 'ACTIVE') || [];
-                const planName = activeSubs.length > 0 ? activeSubs[0].plan?.name : 'Vãng Lai';
-                
-                let chipColor = 'bg-gray-500/10 text-gray-500 border-gray-500/20';
-                let chipLabel = 'Chưa đăng ký';
-                
-                if (activeSubs.length > 0) {
-                     const endD = new Date(activeSubs[0].endDate);
-                     const now = new Date();
-                     const remaining = Math.max(0, Math.ceil((endD.getTime() - now.getTime()) / (1000 * 3600 * 24)));
-                     if (remaining > 0) {
-                         chipColor = 'bg-[#39FF14]/10 text-[#39FF14] border-[#39FF14]/20';
-                         chipLabel = `Còn ${remaining} ngày`;
-                     } else {
-                         chipColor = 'bg-red-500/10 text-red-500 border-red-500/20';
-                         chipLabel = 'Đã hết hạn';
-                     }
-                }
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-[#6E6E77]">
+                    Hệ thống chưa có dữ liệu hội viên nào.
+                  </td>
+                </tr>
+              ) : (
+                members.map((m) => {
+                  const activeSubs = m.memberProfile?.subscriptions?.filter((s: any) => s.status === 'ACTIVE') || [];
+                  const planName = activeSubs.length > 0 ? activeSubs[0].plan?.name : 'Vãng Lai';
 
-                return (
-                  <tr key={m.id} className="hover:bg-gray-800/20 transition-colors group">
-                    <td className="p-6 pl-8 font-mono text-gray-500 text-xs">HV_{m.id}</td>
-                    <td className="p-6 font-bold text-white">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-xs text-gray-400 uppercase overflow-hidden">
-                          {m.avatarUrl ? (
-                            <img src={m.avatarUrl} className="w-full h-full object-cover" />
-                          ) : (
-                            m.fullName.charAt(0)
-                          )}
+                  let chipColor = 'bg-[#F7F7F5] text-[#6E6E77] border-[#E4E4E0]';
+                  let chipLabel = 'Chưa đăng ký';
+
+                  if (activeSubs.length > 0) {
+                    const endD = new Date(activeSubs[0].endDate);
+                    const now = new Date();
+                    const remaining = Math.max(0, Math.ceil((endD.getTime() - now.getTime()) / (1000 * 3600 * 24)));
+                    if (remaining > 0) {
+                      chipColor = 'bg-green-50 text-[#15803D] border-green-200';
+                      chipLabel = `Còn ${remaining} ngày`;
+                    } else {
+                      chipColor = 'bg-red-50 text-red-600 border-red-200';
+                      chipLabel = 'Đã hết hạn';
+                    }
+                  }
+
+                  return (
+                    <tr key={m.id} className="hover:bg-[#F7F7F5]/60 transition-colors group">
+                      <td className="py-3.5 px-6 font-mono text-[11px] text-[#6E6E77]">
+                        HV_{m.id}
+                      </td>
+                      <td className="py-3.5 px-6 font-bold text-[#18181B]">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-[#F7F7F5] border border-[#E4E4E0] flex items-center justify-center text-xs font-bold text-[#EA580C] overflow-hidden shrink-0">
+                            {m.avatarUrl ? (
+                              <img src={m.avatarUrl} alt={m.fullName} className="w-full h-full object-cover" />
+                            ) : (
+                              m.fullName.charAt(0)
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-bold text-[#18181B]">{m.fullName}</p>
+                            <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full font-bold text-[9px] border ${chipColor}`}>
+                              {chipLabel}
+                            </span>
+                          </div>
                         </div>
-                        <div>
-                          <p className="uppercase tracking-tight text-base">{m.fullName}</p>
-                          <span className={`px-2 py-0.5 rounded-full font-black uppercase text-[8px] border ${chipColor}`}>
-                            {chipLabel}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-6 text-gray-300 font-mono">{m.phone}</td>
-                    <td className="p-6 text-gray-300 font-bold uppercase text-xs">{planName}</td>
-                    <td className="p-6 text-right pr-8">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEdit(m)} className="p-2 text-gray-500 hover:text-[#39FF14] transition-colors" title="Sửa hồ sơ">
-                          <Edit2 size={16}/>
-                        </button>
-                        {activeSubs.length > 0 && (
-                          <button 
-                            onClick={async () => {
-                              if (!confirm('Xác nhận Bảo lưu gói tập này?')) return;
-                              await membershipService.updateSubscriptionStatus(activeSubs[0].id, 'FROZEN');
-                              setPage(pagination.page);
-                            }}
-                            title="Bảo lưu" 
-                            className="p-2 text-gray-500 hover:text-blue-400 transition-colors"
+                      </td>
+                      <td className="py-3.5 px-6 font-mono font-medium text-[#18181B]">
+                        {m.phone}
+                      </td>
+                      <td className="py-3.5 px-6 font-semibold text-xs text-[#18181B]">
+                        {planName}
+                      </td>
+                      <td className="py-3.5 px-6 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => openEdit(m)}
+                            className="p-1.5 rounded-lg text-[#6E6E77] hover:text-[#EA580C] hover:bg-orange-50 transition-colors cursor-pointer"
+                            title="Sửa hồ sơ"
                           >
-                            <Snowflake size={16}/>
+                            <Edit2 size={15} />
                           </button>
-                        )}
-                        <button onClick={() => deleteMember(m.id)} className="p-2 text-gray-500 hover:text-red-500 transition-colors" title="Xóa hội viên">
-                          <Trash2 size={16}/>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                 );
-              })}
+                          {activeSubs.length > 0 && (
+                            <button
+                              onClick={async () => {
+                                if (!confirm('Xác nhận Bảo lưu gói tập này?')) return;
+                                await membershipService.updateSubscriptionStatus(activeSubs[0].id, 'FROZEN');
+                                setPage(pagination.page);
+                              }}
+                              title="Bảo lưu gói"
+                              className="p-1.5 rounded-lg text-[#6E6E77] hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                            >
+                              <Snowflake size={15} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => deleteMember(m.id)}
+                            className="p-1.5 rounded-lg text-[#6E6E77] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                            title="Xóa hội viên"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
 
-        <Pagination 
-          currentPage={pagination.page}
-          totalItems={pagination.total}
-          limit={pagination.limit}
-          onPageChange={setPage}
-        />
+        <div className="p-4 border-t border-[#E4E4E0] bg-[#FFFFFF]">
+          <Pagination
+            currentPage={pagination.page}
+            totalItems={pagination.total}
+            limit={pagination.limit}
+            onPageChange={setPage}
+          />
+        </div>
       </div>
 
+      {/* Modal Thêm / Cập Nhật */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
-          <div className="bg-gray-900 border border-gray-800 rounded-[3rem] p-10 w-full max-w-md relative shadow-[0_0_50px_rgba(57,255,20,0.1)]">
-            <h2 className="text-3xl font-black uppercase italic mb-8 flex items-center gap-3">
-              {editingId ? <Edit2 className="text-[#39FF14]"/> : <PlusCircle className="text-[#39FF14]"/>}
-              {editingId ? 'Cập Nhật' : 'Thêm'} <span className="text-[#39FF14]">Hội Viên</span>
-            </h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="flex gap-6 items-center bg-gray-800/50 p-5 rounded-[2rem] border border-gray-700">
-                 <div className="w-20 h-20 rounded-full bg-gray-900 flex items-center justify-center overflow-hidden border-2 border-[#39FF14]/30">
-                    {form.avatarUrl ? (
-                      <img src={form.avatarUrl} className="w-full h-full object-cover" />
-                    ) : (
-                      <Camera className="text-gray-700" />
-                    )}
-                 </div>
-                 <div className="flex-1">
-                    <p className="text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Ảnh Chân Dung</p>
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      className="hidden" 
-                      id="avatar-upload"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setUploading(true);
-                          try {
-                            const res = await uploadService.uploadFile(file);
-                            setForm({...form, avatarUrl: res.url});
-                          } finally { setUploading(false); }
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-[#FFFFFF] border border-[#E4E4E0] rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4E4E0]">
+              <div className="flex items-center gap-2">
+                <User className="w-5 h-5 text-[#EA580C]" />
+                <h3 className="font-bold text-[#18181B] text-base">
+                  {editingId ? 'Cập Nhật Hồ Sơ Hội Viên' : 'Thêm Hội Viên Mới'}
+                </h3>
+              </div>
+              <button
+                onClick={() => { setShowModal(false); setEditingId(null); }}
+                className="p-1 rounded-lg text-[#6E6E77] hover:text-[#18181B] hover:bg-[#F7F7F5] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="flex gap-4 items-center p-3.5 bg-[#F7F7F5] rounded-xl border border-[#E4E4E0]">
+                <div className="w-16 h-16 rounded-full bg-[#FFFFFF] border border-[#E4E4E0] flex items-center justify-center overflow-hidden shrink-0">
+                  {form.avatarUrl ? (
+                    <img src={form.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <Camera className="w-6 h-6 text-[#6E6E77]" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-[11px] font-bold text-[#6E6E77] uppercase mb-1.5">Ảnh Đại Diện</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    id="avatar-upload"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setUploading(true);
+                        try {
+                          const res = await uploadService.uploadFile(file);
+                          setForm({ ...form, avatarUrl: res.url });
+                        } finally {
+                          setUploading(false);
                         }
-                      }}
-                    />
-                    <label htmlFor="avatar-upload" className="bg-[#39FF14] text-black text-[10px] font-black px-4 py-2 rounded-lg cursor-pointer uppercase transition hover:bg-white">
-                      {uploading ? 'Đang tải...' : 'Tải Ảnh Mới'}
-                    </label>
-                 </div>
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="avatar-upload"
+                    className="inline-block px-3 py-1.5 rounded-lg bg-[#FFFFFF] border border-[#E4E4E0] text-xs font-bold text-[#18181B] hover:bg-[#F7F7F5] cursor-pointer transition-colors"
+                  >
+                    {uploading ? 'Đang tải lên...' : 'Chọn Ảnh Chân Dung'}
+                  </label>
+                </div>
               </div>
 
               <div>
-                 <label className="block text-gray-500 text-[10px] font-black uppercase mb-2 ml-4 tracking-widest">Họ & Tên Hội Viên</label>
-                 <input type="text" value={form.fullName} onChange={e => setForm({...form, fullName: e.target.value})} required className="w-full p-5 bg-gray-800 rounded-2xl border border-transparent focus:border-[#39FF14] outline-none text-white font-bold transition-all" placeholder="VD: NGUYỄN VĂN A" />
+                <label className="block text-xs font-bold text-[#18181B] mb-1.5">
+                  Họ và tên hội viên <span className="text-[#EA580C]">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.fullName}
+                  onChange={e => setForm({ ...form, fullName: e.target.value })}
+                  required
+                  placeholder="VD: Nguyễn Minh Quân"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4E4E0] bg-[#F7F7F5] text-xs font-medium text-[#18181B] placeholder-[#6E6E77] focus:outline-hidden focus:border-[#EA580C]"
+                />
               </div>
 
               <div>
-                 <label className="block text-gray-500 text-[10px] font-black uppercase mb-2 ml-4 tracking-widest">Số Điện Thoại</label>
-                 <input type="text" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} required className="w-full p-5 bg-gray-800 rounded-2xl border border-transparent focus:border-[#39FF14] outline-none text-white font-mono" placeholder="09xxxxxxxx" />
+                <label className="block text-xs font-bold text-[#18181B] mb-1.5">
+                  Số điện thoại <span className="text-[#EA580C]">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.phone}
+                  onChange={e => setForm({ ...form, phone: e.target.value })}
+                  required
+                  placeholder="VD: 0988888888"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4E4E0] bg-[#F7F7F5] text-xs font-mono font-bold text-[#18181B] placeholder-[#6E6E77] focus:outline-hidden focus:border-[#EA580C]"
+                />
               </div>
 
               {!editingId && (
-                <p className="text-[10px] text-gray-500 italic text-center">Mật khẩu mặc định khởi tạo sẽ là "123"</p>
+                <p className="text-[11px] text-[#6E6E77] italic text-center">
+                  Mật khẩu mặc định khởi tạo trên hệ thống là: <span className="font-mono font-bold text-[#18181B]">123</span>
+                </p>
               )}
 
-              <div className="flex gap-4 pt-6">
-                <button type="button" onClick={() => { setShowModal(false); setEditingId(null); }} className="flex-1 bg-gray-800 text-white font-black py-4 rounded-2xl hover:bg-gray-700 transition uppercase tracking-widest">Hủy</button>
-                <button type="submit" disabled={uploading} className="flex-1 bg-[#39FF14] text-black font-black py-4 rounded-2xl hover:bg-white transition uppercase tracking-widest disabled:opacity-50 shadow-[0_0_20px_rgba(57,255,20,0.3)]">
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowModal(false); setEditingId(null); }}
+                  className="px-4 py-2 rounded-xl border border-[#E4E4E0] text-xs font-bold text-[#6E6E77] hover:bg-[#F7F7F5] transition-all cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#EA580C] hover:bg-[#EA580C]/90 shadow-sm shadow-[#EA580C]/20 transition-all cursor-pointer disabled:opacity-50"
+                >
                   Xác Nhận
                 </button>
               </div>

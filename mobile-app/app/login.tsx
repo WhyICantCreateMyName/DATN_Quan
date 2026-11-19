@@ -5,14 +5,16 @@ import { gymStorage } from '@/libs/storage';
 import { authService } from '@/services/memberApi';
 import { setAuthToken } from '@/services/apiClient';
 
+// High-Performance Kinetic Dark
 const COLORS = {
-  background: '#020617',
-  card: '#0f172a',
-  primary: '#0ea5e9',
-  textMain: '#ffffff',
-  textSecondary: '#94a3b8',
-  border: '#1e293b',
-  error: '#ef4444'
+  background: '#0E100F',
+  card: '#1A1D1B',
+  primary: '#C8F135',
+  textMain: '#F4F5F0',
+  textSecondary: '#8E9490',
+  border: '#282C29',
+  buttonText: '#0E100F',
+  error: '#FF5A36'
 };
 
 export default function LoginScreen() {
@@ -53,7 +55,7 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Text style={styles.logoText}>TITAN<Text style={styles.logoAccent}>GYM</Text></Text>
-          <Text style={styles.subtitle}>Mobile Ecosystem</Text>
+          <Text style={styles.subtitle}>High-Performance Kinetic Dark</Text>
         </View>
 
         <View style={styles.form}>
@@ -62,7 +64,7 @@ export default function LoginScreen() {
             <TextInput
               style={styles.input}
               placeholder="Nhập số điện thoại của bạn"
-              placeholderTextColor="#475569"
+              placeholderTextColor="#555B57"
               keyboardType="phone-pad"
               value={phone}
               onChangeText={setPhone}
@@ -74,7 +76,7 @@ export default function LoginScreen() {
             <TextInput
               style={styles.input}
               placeholder="********"
-              placeholderTextColor="#475569"
+              placeholderTextColor="#555B57"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
@@ -85,6 +87,7 @@ export default function LoginScreen() {
             disabled={isLoggingIn}
             onPress={handleLogin}
             style={[styles.loginButton, isLoggingIn && styles.buttonDisabled]}
+            activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>
               {isLoggingIn ? 'Đang xác thực...' : 'Đăng Nhập Hệ Thống'}
@@ -104,14 +107,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
   },
   header: {
-    marginBottom: 48,
+    marginBottom: 44,
     alignItems: 'center',
   },
   logoText: {
-    fontSize: 40,
+    fontSize: 42,
     fontWeight: '900',
     color: COLORS.textMain,
     letterSpacing: -1,
@@ -121,10 +124,10 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: COLORS.textSecondary,
-    marginTop: 8,
-    fontWeight: '500',
+    marginTop: 6,
+    fontWeight: '700',
     letterSpacing: 2,
-    fontSize: 12,
+    fontSize: 11,
     textTransform: 'uppercase',
   },
   form: {
@@ -140,14 +143,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   input: {
     backgroundColor: COLORS.card,
     color: COLORS.textMain,
     padding: 16,
     borderRadius: 16,
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '600',
     borderWidth: 1,
     borderColor: COLORS.border,
   },
@@ -156,22 +160,21 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     borderRadius: 16,
     alignItems: 'center',
-    marginTop: 32,
+    marginTop: 28,
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
     elevation: 4,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   buttonText: {
-    color: '#ffffff',
+    color: COLORS.buttonText,
     fontWeight: '900',
-    fontSize: 18,
+    fontSize: 16,
     textTransform: 'uppercase',
+    letterSpacing: 1,
   },
 });
-
-

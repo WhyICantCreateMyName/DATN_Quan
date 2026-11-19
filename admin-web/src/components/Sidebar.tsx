@@ -31,12 +31,12 @@ export default function Sidebar() {
   if (!currentUser) return null;
 
   return (
-    <aside className="w-64 bg-gray-900 border-r border-gray-800 h-screen flex flex-col fixed left-0 top-0">
-      <div className="h-20 flex items-center px-6 border-b border-gray-800">
-        <h1 className="text-xl font-black text-white tracking-tight">TITANGYM <span className="text-[#39FF14]">ADMIN</span></h1>
+    <aside className="w-64 bg-[#FFFFFF] border-r border-[#E4E4E0] h-screen flex flex-col fixed left-0 top-0">
+      <div className="h-20 flex items-center px-6 border-b border-[#E4E4E0]">
+        <h1 className="text-xl font-black text-[#18181B] tracking-tight">TITAN<span className="text-[#EA580C]">GYM</span></h1>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1.5">
         {navItems.map(item => {
           if (!item.roles.includes(currentUser.role)) return null;
           
@@ -47,32 +47,32 @@ export default function Sidebar() {
             <Link 
               key={item.href} 
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${
-                isActive ? 'bg-[#39FF14]/10 text-[#39FF14]' : 'text-gray-400 hover:text-white hover:bg-gray-800'
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-xs font-bold ${
+                isActive ? 'bg-[#EA580C] text-white shadow-sm shadow-[#EA580C]/20' : 'text-[#6E6E77] hover:text-[#18181B] hover:bg-[#F7F7F5]'
               }`}
             >
-              <Icon className="w-5 h-5" />
+              <Icon className="w-4 h-4" />
               {item.label}
             </Link>
           );
         })}
       </div>
 
-      <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-3 px-4 py-3 mb-2">
-          <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center font-bold text-sm text-white">
+      <div className="p-4 border-t border-[#E4E4E0]">
+        <div className="flex items-center gap-3 px-3 py-2 mb-2 bg-[#F7F7F5] rounded-xl border border-[#E4E4E0]">
+          <div className="w-8 h-8 rounded-full bg-[#FFFFFF] border border-[#E4E4E0] flex items-center justify-center font-bold text-xs text-[#EA580C]">
             {currentUser.fullName.charAt(0)}
           </div>
           <div>
-            <p className="text-sm font-bold text-white">{currentUser.fullName}</p>
-            <p className="text-xs text-gray-500">{currentUser.role}</p>
+            <p className="text-xs font-bold text-[#18181B] line-clamp-1">{currentUser.fullName}</p>
+            <p className="text-[10px] font-mono text-[#6E6E77] uppercase">{currentUser.role}</p>
           </div>
         </div>
         <button 
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors font-medium"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
         >
-          <LogOut className="w-5 h-5" /> Đăng xuất
+          <LogOut className="w-4 h-4" /> Đăng xuất
         </button>
       </div>
     </aside>

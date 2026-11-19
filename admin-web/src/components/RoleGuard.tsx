@@ -27,8 +27,8 @@ export default function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
 
   if (loading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-gray-950">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#39FF14]"></div>
+      <div className="h-screen w-full flex items-center justify-center bg-[#F7F7F5]">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#EA580C]"></div>
       </div>
     );
   }

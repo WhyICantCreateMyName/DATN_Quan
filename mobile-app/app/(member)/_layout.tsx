@@ -6,11 +6,11 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { setAuthToken } from '@/services/apiClient';
 
 const COLORS = {
-  background: '#020617',
-  card: '#0f172a',
-  primary: '#0ea5e9',
-  border: '#1e293b',
-  inactive: '#64748b'
+  background: '#0E100F',
+  card: '#1A1D1B',
+  primary: '#C8F135',
+  border: '#282C29',
+  inactive: '#8E9490'
 };
 
 export default function TabLayout() {
