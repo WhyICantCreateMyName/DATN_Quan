@@ -1,10 +1,13 @@
 import axios from 'axios';
 
-// Thay đổi ngrok url ở đây để áp dụng toàn cục
-export const NGROK_API = 'https://robert-leafiest-kristen.ngrok-free.dev/api';
+// Cloudflare Tunnel URL chính thức cho Mobile App
+export const CLOUDFLARE_API = 'https://gym-api.thanhcanghaiphong.online/api';
+
+// Fallback hoặc backward-compatible alias
+export const NGROK_API = CLOUDFLARE_API;
 
 const apiClient = axios.create({
-  baseURL: NGROK_API,
+  baseURL: CLOUDFLARE_API,
   headers: {
     'x-platform': 'mobile'
   }

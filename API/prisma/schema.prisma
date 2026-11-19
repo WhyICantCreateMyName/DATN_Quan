@@ -15,6 +15,7 @@ model User {
   phone        String   @unique
   passwordHash String
   fullName     String
+  avatarUrl    String?
   // Các quyền: "ADMIN", "RECEPTIONIST", "PT", "MEMBER"
   role         String   @default("MEMBER") 
   isActive     Boolean  @default(true)
@@ -36,7 +37,6 @@ model MemberProfile {
   userId         Int      @unique
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   fingerprintId  String?  @unique // ID kết nối với thiết bị quét vân tay
-  avatarUrl      String?
   
   remainingPtSessions Int @default(0) // Tổng số buổi PT còn lại từ các gói tập
   
@@ -55,10 +55,6 @@ model TrainerProfile {
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   specialization String?  // Ví dụ: Thể hình, Yoga, Phục hồi chấn thương...
   bio            String?
-  avatarUrl      String?  // Lưu trữ link ảnh đại diện (giống MemberProfile)
-  height         Float?
-  weight         Float?
-  bodyFat        Float?
   
   bookings       Booking[]
   bodyMetrics    BodyMetric[] // Các chỉ số mà PT đo cho học viên
@@ -111,7 +107,7 @@ model MemberSubscription {
   
   startDate           DateTime
   endDate             DateTime
-  remainingPtSessions Int      @default(0)
+  grantedPtSessions   Int      @default(0) // Số buổi PT cấp theo hợp đồng gói này
   // Trạng thái: "ACTIVE", "EXPIRED", "FROZEN" (Bảo lưu)
   status              String   @default("ACTIVE") 
   

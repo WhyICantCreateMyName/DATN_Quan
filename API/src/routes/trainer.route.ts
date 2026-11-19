@@ -173,24 +173,23 @@ router.put('/profile', async (req: Request, res: Response) => {
     const ptId = getPtId(req);
     if (!ptId) return res.status(401).json({ error: 'Unauthorized PT' });
 
-    const { fullName, avatarUrl, specialization, bio, height, weight, bodyFat } = req.body;
+    const { fullName, avatarUrl, specialization, bio } = req.body;
 
-    // Update User (FullName)
+    // Cập nhật User (Họ tên & Avatar trực tiếp trên User)
     const user = await prisma.user.update({
       where: { id: ptId },
-      data: { fullName }
+      data: {
+        ...(fullName !== undefined ? { fullName } : {}),
+        ...(avatarUrl !== undefined ? { avatarUrl } : {})
+      }
     });
 
-    // Update TrainerProfile
+    // Cập nhật TrainerProfile (Chuyên môn & Bio)
     const profile = await prisma.trainerProfile.update({
       where: { userId: ptId },
       data: {
-        avatarUrl,
-        specialization,
-        bio,
-        height: height ? Number(height) : null,
-        weight: weight ? Number(weight) : null,
-        bodyFat: bodyFat ? Number(bodyFat) : null
+        ...(specialization !== undefined ? { specialization } : {}),
+        ...(bio !== undefined ? { bio } : {})
       }
     });
 

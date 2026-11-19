@@ -1,22 +1,13 @@
-import { View, Text, ScrollView, RefreshControl, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
-import { CreditCard, LogOut, ArrowRight } from 'lucide-react-native';
+import { CreditCard, LogOut, ArrowRight, UserCircle2 } from 'lucide-react-native';
 import { gymStorage } from '@/libs/storage';
 import { setAuthToken } from '@/services/apiClient';
 import { useRouter } from 'expo-router';
 import { useDashboard } from '@/hooks/useDashboard';
 import { formatDate, getRemainingDays } from '@/libs/utils';
-
-const COLORS = {
-  background: '#020617',
-  card: '#0f172a',
-  primary: '#0ea5e9',
-  textMain: '#ffffff',
-  textSecondary: '#94a3b8',
-  border: '#1e293b',
-  success: '#10b981'
-};
+import { KINETIC_THEME } from '@/constants/theme';
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -31,14 +22,23 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary}/>}>
+      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={KINETIC_THEME.accentPrimary}/>}>
         <View style={styles.header}>
-           <View>
-              <Text style={styles.headerLabel}>Thẻ Hội Viên</Text>
-              <Text style={styles.headerTitle}>{me?.fullName || 'Hội Viên'}</Text>
+           <View style={styles.headerProfile}>
+              <View style={styles.avatarFrame}>
+                 {me?.avatarUrl ? (
+                    <Image source={{ uri: me.avatarUrl }} style={styles.avatarImg} />
+                 ) : (
+                    <UserCircle2 color={KINETIC_THEME.accentPrimary} size={36} />
+                 )}
+              </View>
+              <View>
+                 <Text style={styles.headerLabel}>THẺ HỘI VIÊN</Text>
+                 <Text style={styles.headerTitle}>{me?.fullName || 'Hội Viên'}</Text>
+              </View>
            </View>
            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-              <LogOut color="#EF4444" size={20}/>
+              <LogOut color={KINETIC_THEME.accentSecondary} size={18}/>
            </TouchableOpacity>
         </View>
 
@@ -46,16 +46,16 @@ export default function DashboardScreen() {
            <View style={styles.qrContainer}>
               <QRCode 
                  value={`TITAN-GATE-${me?.id || 0}`} 
-                 size={200} 
-                 color={COLORS.background}
+                 size={190} 
+                 color={KINETIC_THEME.background}
                  backgroundColor="transparent"
               />
            </View>
-           <Text style={styles.qrHint}>Hãy đưa mã này vào máy quét tại cổng để Check-in vào phòng tập.</Text>
+           <Text style={styles.qrHint}>Đưa mã QR này vào máy quét tại cổng để Check-in vào phòng tập.</Text>
         </View>
 
         <View style={styles.content}>
-           <Text style={styles.sectionTitle}>Gói tập của bạn</Text>
+           <Text style={styles.sectionTitle}>GÓI TẬP HIỆN TẠI</Text>
            {dash?.activeSubscription ? (() => {
               const sub = dash.activeSubscription;
               const remainingDays = getRemainingDays(sub.endDate);
@@ -63,10 +63,10 @@ export default function DashboardScreen() {
               return (
               <View style={styles.planCard}>
                   <View style={styles.planHeader}>
-                     <CreditCard color={COLORS.primary} size={24} style={{ marginRight: 12 }} />
+                     <CreditCard color={KINETIC_THEME.accentPrimary} size={22} style={{ marginRight: 10 }} />
                      <Text style={styles.planName}>{sub.plan.name}</Text>
                      <TouchableOpacity onPress={() => router.push('/(member)/membership' as any)}>
-                        <ArrowRight color={COLORS.primary} size={20} />
+                        <ArrowRight color={KINETIC_THEME.accentPrimary} size={20} />
                      </TouchableOpacity>
                   </View>
                  
@@ -79,32 +79,25 @@ export default function DashboardScreen() {
                     <Text style={styles.infoValue}>{remainingDays > 0 ? `${remainingDays} ngày` : 'Hết hạn'}</Text>
                  </View>
                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Buổi tập PT còn lại</Text>
-                    <Text style={styles.infoValue}>{dash.remainingPtSessions} buổi</Text>
+                    <Text style={styles.infoLabel}>Ví buổi tập PT</Text>
+                    <Text style={[styles.infoValue, { color: KINETIC_THEME.accentPrimary, fontWeight: '800' }]}>
+                       {dash?.remainingPtSessions ?? 0} buổi
+                    </Text>
                  </View>
-                  <View style={styles.statusRow}>
-                     <Text style={styles.infoLabel}>Trạng thái</Text>
-                     <Text style={styles.statusText}>● ĐANG HOẠT ĐỘNG</Text>
-                  </View>
 
-                  <TouchableOpacity 
-                     onPress={() => router.push('/(member)/membership' as any)}
-                     style={styles.upgradeButton}
-                  >
-                     <Text style={styles.upgradeButtonText}>Gia hạn / Nâng cấp gói</Text>
-                  </TouchableOpacity>
-               </View>
+                 <View style={styles.statusRow}>
+                    <Text style={styles.infoLabel}>Trạng thái</Text>
+                    <Text style={styles.statusText}>{sub.status === 'ACTIVE' ? '● Đang hoạt động' : sub.status}</Text>
+                 </View>
+              </View>
               );
            })() : (
-               <View style={styles.emptyCard}>
-                  <Text style={styles.infoLabel}>Bạn hiện chưa có gói tập nào đang kích hoạt.</Text>
-                  <TouchableOpacity 
-                     onPress={() => router.push('/(member)/membership' as any)}
-                     style={[styles.upgradeButton, { marginTop: 16, width: '100%' }]}
-                  >
-                     <Text style={styles.upgradeButtonText}>Đăng ký ngay</Text>
-                  </TouchableOpacity>
-               </View>
+              <View style={styles.emptyCard}>
+                 <Text style={{ color: KINETIC_THEME.textMuted, fontSize: 14 }}>Bạn chưa đăng ký gói tập nào đang hoạt động.</Text>
+                 <TouchableOpacity onPress={() => router.push('/(member)/membership' as any)} style={styles.upgradeButton}>
+                    <Text style={styles.upgradeButtonText}>XEM DANH MỤC GÓI TẬP</Text>
+                 </TouchableOpacity>
+              </View>
            )}
         </View>
       </ScrollView>
@@ -115,132 +108,159 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: KINETIC_THEME.background,
   },
   header: {
-    paddingHorizontal: 24,
-    paddingTop: 32,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: KINETIC_THEME.border,
+  },
+  headerProfile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatarFrame: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: KINETIC_THEME.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: KINETIC_THEME.accentPrimary,
+    overflow: 'hidden',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
   },
   headerLabel: {
-    color: COLORS.textSecondary,
-    fontSize: 12,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 4,
-    fontWeight: '700',
+    color: KINETIC_THEME.textMuted,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
   },
   headerTitle: {
-    color: COLORS.textMain,
-    fontSize: 24,
-    fontWeight: '900',
+    color: KINETIC_THEME.textPrimary,
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   logoutButton: {
     padding: 10,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderRadius: 99,
+    backgroundColor: KINETIC_THEME.surface,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
   },
   qrSection: {
     alignItems: 'center',
-    marginTop: 48,
-    marginBottom: 32,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
   },
   qrContainer: {
-    backgroundColor: '#ffffff',
     padding: 16,
-    borderRadius: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    shadowColor: KINETIC_THEME.accentPrimary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
   },
   qrHint: {
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-    marginTop: 24,
+    color: KINETIC_THEME.textMuted,
+    fontSize: 12,
     textAlign: 'center',
-    paddingHorizontal: 32,
-    fontSize: 14,
+    marginTop: 14,
+    lineHeight: 18,
+    paddingHorizontal: 20,
   },
   content: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
   },
   sectionTitle: {
-    color: COLORS.textMain,
-    fontSize: 20,
-    fontWeight: '800',
-    marginBottom: 16,
+    color: KINETIC_THEME.textPrimary,
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 1,
+    marginBottom: 12,
   },
   planCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 24,
-    padding: 24,
+    backgroundColor: KINETIC_THEME.surface,
+    borderRadius: 20,
+    padding: 20,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: KINETIC_THEME.border,
   },
   planHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: KINETIC_THEME.border,
   },
   planName: {
-    color: COLORS.textMain,
-    fontSize: 18,
-    fontWeight: '900',
     flex: 1,
+    color: KINETIC_THEME.textPrimary,
+    fontSize: 16,
+    fontWeight: '800',
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   infoLabel: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
+    color: KINETIC_THEME.textMuted,
+    fontSize: 13,
   },
   infoValue: {
-    color: COLORS.textMain,
+    color: KINETIC_THEME.textPrimary,
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
   },
   statusRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
-    paddingTop: 16,
+    marginTop: 6,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#1e293b',
+    borderTopColor: KINETIC_THEME.border,
   },
   statusText: {
-    color: COLORS.success,
+    color: KINETIC_THEME.success,
     fontWeight: '800',
-    fontSize: 14,
+    fontSize: 13,
   },
   emptyCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 24,
+    backgroundColor: KINETIC_THEME.surface,
+    borderRadius: 20,
     padding: 24,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: KINETIC_THEME.border,
     alignItems: 'center',
   },
   upgradeButton: {
-    backgroundColor: 'rgba(14, 165, 233, 0.1)',
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: 16,
-    paddingVertical: 12,
+    backgroundColor: KINETIC_THEME.accentPrimary,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 18,
+    width: '100%',
   },
   upgradeButtonText: {
-    color: COLORS.primary,
-    fontWeight: '800',
-    fontSize: 14,
+    color: KINETIC_THEME.textOnAccent,
+    fontWeight: '900',
+    fontSize: 13,
+    letterSpacing: 0.5,
   }
 });
-

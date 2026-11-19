@@ -52,22 +52,30 @@ router.get('/', async (req: Request, res: Response) => {
 // Đăng ký User mới
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { phone, password, fullName, role } = req.body;
+    const { phone, password, fullName, role, avatarUrl, specialization } = req.body;
 
     if (!phone || !password || !fullName) {
       res.status(400).json({ error: 'Thiếu thông tin bắt buộc' });
       return;
     }
 
+    const assignedRole = role || 'MEMBER';
+    const data: any = {
+      phone,
+      passwordHash: password, // Todo: mã hoá bcrypt
+      fullName,
+      role: assignedRole,
+      avatarUrl: avatarUrl || null
+    };
+
+    if (assignedRole === 'MEMBER') {
+      data.memberProfile = { create: {} };
+    } else if (assignedRole === 'PT') {
+      data.trainerProfile = { create: { specialization: specialization || 'General' } };
+    }
+
     const user = await prisma.user.create({
-      data: {
-        phone,
-        passwordHash: password, // Todo: mã hoá bcrypt
-        fullName,
-        role: role || 'MEMBER',
-        memberProfile: (role === 'MEMBER' || role === 'RECEPTIONIST' || role === 'ADMIN' || !role) ? { create: {} } : undefined,
-        trainerProfile: role === 'PT' ? { create: { specialization: 'General' } } : undefined
-      },
+      data,
       include: { memberProfile: true, trainerProfile: true }
     });
     res.json(user);
@@ -106,22 +114,25 @@ router.patch('/:id/profile', async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return res.status(404).json({ error: 'User không tồn tại' });
 
-    let profile;
-    if (user.role === 'PT') {
-      profile = await prisma.trainerProfile.upsert({
+    // Cập nhật avatarUrl trực tiếp lên bảng User
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(avatarUrl !== undefined ? { avatarUrl } : {})
+      },
+      include: { memberProfile: true, trainerProfile: true }
+    });
+
+    // Nếu là MEMBER và có gửi fingerprintId, cập nhật MemberProfile
+    if (user.role === 'MEMBER' && fingerprintId !== undefined) {
+      await prisma.memberProfile.upsert({
         where: { userId },
-        update: { avatarUrl },
-        create: { userId, avatarUrl, specialization: 'General' }
-      });
-    } else {
-      profile = await prisma.memberProfile.upsert({
-        where: { userId },
-        update: { avatarUrl, fingerprintId },
-        create: { userId, avatarUrl, fingerprintId }
+        update: { fingerprintId },
+        create: { userId, fingerprintId }
       });
     }
     
-    res.json(profile);
+    res.json(updatedUser);
   } catch (error: any) {
     console.error('Update Profile Error:', error);
     res.status(400).json({ error: error.message });
@@ -132,10 +143,17 @@ router.patch('/:id/profile', async (req: Request, res: Response) => {
 router.patch('/:id', async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const { fullName, phone, role, isActive } = req.body;
+    const { fullName, phone, role, isActive, avatarUrl } = req.body;
     const user = await prisma.user.update({
       where: { id },
-      data: { fullName, phone, role, isActive }
+      data: {
+        ...(fullName !== undefined ? { fullName } : {}),
+        ...(phone !== undefined ? { phone } : {}),
+        ...(role !== undefined ? { role } : {}),
+        ...(isActive !== undefined ? { isActive } : {}),
+        ...(avatarUrl !== undefined ? { avatarUrl } : {})
+      },
+      include: { memberProfile: true, trainerProfile: true }
     });
     res.json(user);
   } catch (error: any) {

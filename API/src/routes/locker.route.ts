@@ -53,7 +53,7 @@ router.patch('/:id/cell', async (req: Request, res: Response) => {
     if (!lockerRow) return res.status(404).json({ error: 'Không tìm thấy dãy locker' });
 
     let layout = lockerRow.layout as any[][];
-    if (x >= 0 && x < lockerRow.rowCount && y >= 0 && y < lockerRow.colCount) {
+    if (x >= 0 && x < lockerRow.rowCount && y >= 0 && y < lockerRow.colCount && layout[x]) {
       layout[x][y] = value;
     } else {
       return res.status(400).json({ error: 'Vị trí không hợp lệ' });

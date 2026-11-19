@@ -75,16 +75,22 @@ router.post('/invoice', async (req: Request, res: Response) => {
           if (item.planId) {
              const plan = await prisma.membershipPlan.findUnique({ where: { id: Number(item.planId) } });
              if (plan) {
-                await prisma.memberSubscription.create({
-                   data: {
-                      memberId: Number(memberId),
-                      planId: plan.id,
-                      startDate: new Date(),
-                      endDate: new Date(new Date().setDate(new Date().getDate() + plan.durationDays)),
-                      remainingPtSessions: plan.ptSessions,
-                      status: 'ACTIVE'
-                   }
-                });
+                await prisma.$transaction([
+                   prisma.memberSubscription.create({
+                      data: {
+                         memberId: Number(memberId),
+                         planId: plan.id,
+                         startDate: new Date(),
+                         endDate: new Date(new Date().setDate(new Date().getDate() + plan.durationDays)),
+                         grantedPtSessions: plan.ptSessions,
+                         status: 'ACTIVE'
+                      }
+                   }),
+                   prisma.memberProfile.update({
+                      where: { id: Number(memberId) },
+                      data: { remainingPtSessions: { increment: plan.ptSessions } }
+                   })
+                ]);
              }
           }
        }

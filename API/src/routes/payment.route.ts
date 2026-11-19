@@ -82,26 +82,38 @@ router.post('/momo-ipn', async (req: Request, res: Response) => {
          if (existingSub && existingSub.plan.tag === plan.tag) {
             const newEndDate = new Date(existingSub.endDate);
             newEndDate.setDate(newEndDate.getDate() + plan.durationDays);
-            await prisma.memberSubscription.update({
-               where: { id: existingSub.id },
-               data: { 
-                  endDate: newEndDate,
-                  remainingPtSessions: existingSub.remainingPtSessions + plan.ptSessions
-               }
-            });
+            await prisma.$transaction([
+               prisma.memberSubscription.update({
+                  where: { id: existingSub.id },
+                  data: { 
+                     endDate: newEndDate,
+                     grantedPtSessions: existingSub.grantedPtSessions + plan.ptSessions
+                  }
+               }),
+               prisma.memberProfile.update({
+                  where: { id: Number(memberId) },
+                  data: { remainingPtSessions: { increment: plan.ptSessions } }
+               })
+            ]);
          } else {
             const endDate = new Date();
             endDate.setDate(endDate.getDate() + plan.durationDays);
-            await prisma.memberSubscription.create({
-               data: {
-                  memberId: Number(memberId),
-                  planId: Number(planId),
-                  startDate: new Date(),
-                  endDate,
-                  remainingPtSessions: plan.ptSessions,
-                  status: 'ACTIVE'
-               }
-            });
+            await prisma.$transaction([
+               prisma.memberSubscription.create({
+                  data: {
+                     memberId: Number(memberId),
+                     planId: Number(planId),
+                     startDate: new Date(),
+                     endDate,
+                     grantedPtSessions: plan.ptSessions,
+                     status: 'ACTIVE'
+                  }
+               }),
+               prisma.memberProfile.update({
+                  where: { id: Number(memberId) },
+                  data: { remainingPtSessions: { increment: plan.ptSessions } }
+               })
+            ]);
          }
          console.log('Successfully activated subscription via MoMo IPN');
       }

@@ -118,8 +118,8 @@ export default function Members() {
                     <td className="p-6 font-bold text-white">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-xs text-gray-400 uppercase overflow-hidden">
-                          {m.memberProfile?.avatarUrl ? (
-                            <img src={m.memberProfile.avatarUrl} className="w-full h-full object-cover" />
+                          {m.avatarUrl ? (
+                            <img src={m.avatarUrl} className="w-full h-full object-cover" />
                           ) : (
                             m.fullName.charAt(0)
                           )}

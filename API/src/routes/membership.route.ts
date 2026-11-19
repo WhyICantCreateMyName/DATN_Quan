@@ -77,38 +77,50 @@ router.post('/subscribe', async (req: Request, res: Response) => {
     });
 
     if (existingSub && existingSub.plan.tag === plan.tag) {
-      // CÙNG PHÂN KHÚC (TAG) -> CỘNG DỒN THỜI GIAN
+      // CÙNG PHÂN KHÚC (TAG) -> CỘNG DỒN THỜI GIAN & BUỔI PT VÀO WALLET
       const newEndDate = new Date(existingSub.endDate);
       newEndDate.setDate(newEndDate.getDate() + plan.durationDays);
 
-      const subscription = await prisma.memberSubscription.update({
-        where: { id: existingSub.id },
-        data: {
-          endDate: newEndDate,
-          remainingPtSessions: existingSub.remainingPtSessions + plan.ptSessions
-        }
-      });
+      const [subscription] = await prisma.$transaction([
+        prisma.memberSubscription.update({
+          where: { id: existingSub.id },
+          data: {
+            endDate: newEndDate,
+            grantedPtSessions: existingSub.grantedPtSessions + plan.ptSessions
+          }
+        }),
+        prisma.memberProfile.update({
+          where: { id: Number(memberId) },
+          data: {
+            remainingPtSessions: { increment: plan.ptSessions }
+          }
+        })
+      ]);
       return res.json({ message: 'Cộng dồn gói cùng phân khúc thành công', subscription });
     }
 
-    // KHÁC LOẠI GÓI HOẶC CHƯA CÓ GÓI
+    // KHÁC LOẠI GÓI HOẶC CHƯA CÓ GÓI -> TẠO GÓI MỚI & CỘNG BUỔI PT VÀO WALLET
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + plan.durationDays);
 
-    const subscription = await prisma.memberSubscription.create({
-      data: {
-        memberId: Number(memberId),
-        planId: Number(planId),
-        startDate: new Date(),
-        endDate,
-        remainingPtSessions: plan.ptSessions,
-        status: 'ACTIVE'
-      }
-    });
-
-    // Nếu khác loại gói, logic "tự kích hoạt gói cao cấp nhất" 
-    // Ở đây ta có thể ẩn hoặc chuyển trạng thái các gói thấp hơn nếu cần, 
-    // nhưng đơn giản nhất là UI sẽ ưu tiên hiển thị gói có giá cao nhất.
+    const [subscription] = await prisma.$transaction([
+      prisma.memberSubscription.create({
+        data: {
+          memberId: Number(memberId),
+          planId: Number(planId),
+          startDate: new Date(),
+          endDate,
+          grantedPtSessions: plan.ptSessions,
+          status: 'ACTIVE'
+        }
+      }),
+      prisma.memberProfile.update({
+        where: { id: Number(memberId) },
+        data: {
+          remainingPtSessions: { increment: plan.ptSessions }
+        }
+      })
+    ]);
 
     res.json({ message: 'Đăng ký gói mới thành công', subscription });
   } catch (error: any) {
@@ -177,11 +189,36 @@ router.patch('/subscriptions/:id/transfer', async (req: Request, res: Response) 
     const id = Number(req.params.id);
     const { targetMemberId } = req.body;
     
-    const sub = await prisma.memberSubscription.update({
-      where: { id },
-      data: { memberId: Number(targetMemberId) }
+    const existingSub = await prisma.memberSubscription.findUnique({ where: { id } });
+    if (!existingSub) return res.status(404).json({ error: 'Gói đăng ký không tồn tại' });
+    
+    const oldMemberId = existingSub.memberId;
+    const newMemberId = Number(targetMemberId);
+
+    const updatedSub = await prisma.$transaction(async (tx) => {
+      const sub = await tx.memberSubscription.update({
+        where: { id },
+        data: { memberId: newMemberId }
+      });
+
+      // Chuyển các buổi PT chưa tập từ ví hội viên cũ sang hội viên mới
+      const oldMember = await tx.memberProfile.findUnique({ where: { id: oldMemberId } });
+      const sessionsToMove = Math.min(oldMember?.remainingPtSessions || 0, existingSub.grantedPtSessions);
+      if (sessionsToMove > 0) {
+        await tx.memberProfile.update({
+          where: { id: oldMemberId },
+          data: { remainingPtSessions: { decrement: sessionsToMove } }
+        });
+        await tx.memberProfile.update({
+          where: { id: newMemberId },
+          data: { remainingPtSessions: { increment: sessionsToMove } }
+        });
+      }
+
+      return sub;
     });
-    res.json(sub);
+
+    res.json(updatedSub);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }

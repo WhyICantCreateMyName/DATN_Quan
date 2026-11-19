@@ -1,50 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --color-neon-blue: #00F0FF;
-  --color-neon-green: #39FF14;
-  --color-dark-bg: #0A0A0A;
-  --color-dark-surface: #141414;
-  --color-dark-card: #1C1C1E;
-  --color-dark-border: #2A2A2A;
-  
-  --animate-float: float 4s ease-in-out infinite;
-  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-15px); }
-  }
-}
-
 :root {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --background: #F7F7F5;
+  --foreground: #18181B;
+  --surface: #FFFFFF;
+  --border-card: #E4E4E0;
+  --primary-accent: #EA580C;
+  --secondary-accent: #15803D;
+  --muted-text: #6E6E77;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-@layer utilities {
-  .glass {
-    @apply bg-black/50 backdrop-blur-lg border border-white/10;
-  }
-  .neon-text {
-    @apply text-neon-blue drop-shadow-[0_0_10px_rgba(0,240,255,0.8)];
-  }
-  .neon-border {
-    @apply border border-neon-blue shadow-[0_0_10px_rgba(0,240,255,0.5)];
-  }
+/* Tabular figures for numbers / stats */
+.font-mono, [data-tabular] {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-feature-settings: 'tnum' on, 'zero' on;
 }
 
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E4E4E0;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6E6E77;
+}

@@ -52,7 +52,13 @@ async function main() {
   console.log('Tạo 15 Staff...');
   // Chắc chắn phải có Admin mặc định để test login admin-web
   await prisma.user.create({
-    data: { phone: '0902222222', passwordHash: '123456', fullName: 'ADMIN QUYỀN LỰC', role: 'ADMIN' }
+    data: {
+      phone: '0902222222',
+      passwordHash: '123456',
+      fullName: 'ADMIN QUYỀN LỰC',
+      role: 'ADMIN',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
+    }
   });
 
   // Tạo PT cố định để test
@@ -62,6 +68,7 @@ async function main() {
       passwordHash: '123456',
       fullName: 'PT MASTER',
       role: 'PT',
+      avatarUrl: 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=150',
       trainerProfile: {
         create: {
           specialization: 'Bodybuilding & Fitness',
@@ -72,17 +79,25 @@ async function main() {
   });
 
   const roles = ['RECEPTIONIST', 'PT', 'PT', 'RECEPTIONIST'];
+  const staffAvatars = [
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150'
+  ];
   for (let i = 1; i <= 14; i++) {
     const roleId = roles[i % roles.length];
-    await prisma.user.create({
-      data: {
-        phone: `09200000${i.toString().padStart(2, '0')}`,
-        passwordHash: '123456',
-        fullName: `Nhân Sự Số ${i} (${roleId})`,
-        role: roleId || 'PT',
-        ...(roleId === 'PT' ? { trainerProfile: { create: { specialization: 'General Training' } } } : {})
-      }
-    });
+    const data: any = {
+      phone: `09200000${i.toString().padStart(2, '0')}`,
+      passwordHash: '123456',
+      fullName: `Nhân Sự Số ${i} (${roleId})`,
+      role: roleId || 'PT',
+      avatarUrl: staffAvatars[i % staffAvatars.length]
+    };
+    if (roleId === 'PT') {
+      data.trainerProfile = { create: { specialization: 'General Training' } };
+    }
+    await prisma.user.create({ data });
   }
 
   // 4. Tạo 25 Members (Khách Hàng)
@@ -116,6 +131,7 @@ async function main() {
       passwordHash: '123456',
       fullName: 'Nguyễn Minh Quân',
       role: 'MEMBER',
+      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
       memberProfile: {
         create: {
           fingerprintId: 'QUAN_0111',
@@ -125,7 +141,7 @@ async function main() {
               planId: diamond180.id,
               startDate: new Date(),
               endDate: new Date(new Date().setDate(new Date().getDate() + 180)),
-              remainingPtSessions: 24,
+              grantedPtSessions: 24,
               status: 'ACTIVE'
             }
           }
@@ -147,14 +163,14 @@ async function main() {
     });
 
     // 5. Cấp ngẫu nhiên gói tập cho 1 số Member (để test)
-    if (i % 2 === 0 && mem.memberProfile) {
+    if (i % 2 === 0 && mem.memberProfile && plans[0]) {
       await prisma.memberSubscription.create({
         data: {
           memberId: mem.memberProfile.id,
           planId: plans[0].id, // Cấp gói 1
           startDate: new Date(),
           endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
-          remainingPtSessions: 0,
+          grantedPtSessions: 0,
           status: 'ACTIVE'
         }
       });

@@ -24,6 +24,10 @@ router.get('/dashboard', async (req: Request, res: Response) => {
     const memberId = await getMemberId(req);
     if (!memberId) return res.status(401).json({ error: 'Unauthorized Member' });
 
+    const member = await prisma.memberProfile.findUnique({
+      where: { id: memberId }
+    });
+
     const subscriptions = await prisma.memberSubscription.findMany({
       where: { memberId, status: 'ACTIVE' },
       include: { plan: true }
@@ -41,7 +45,7 @@ router.get('/dashboard', async (req: Request, res: Response) => {
 
     res.json({
        activeSubscription: activeSub,
-       remainingPtSessions: activeSub ? activeSub.remainingPtSessions : 0
+       remainingPtSessions: member ? member.remainingPtSessions : 0
     });
   } catch (e) {
     res.status(500).json({ error: 'Server error' });

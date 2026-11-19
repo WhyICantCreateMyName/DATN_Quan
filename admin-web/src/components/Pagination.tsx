@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PaginationProps {
@@ -29,10 +30,10 @@ export default function Pagination({ currentPage, totalItems, limit, onPageChang
         <button
           key={i}
           onClick={() => onPageChange(i)}
-          className={`w-10 h-10 rounded-xl font-bold transition-all ${
+          className={`w-9 h-9 rounded-lg text-xs font-mono font-bold transition-colors ${
             currentPage === i 
-              ? 'bg-[#39FF14] text-black shadow-[0_0_15px_rgba(57,255,20,0.3)]' 
-              : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'
+              ? 'bg-[#EA580C] text-white shadow-sm shadow-[#EA580C]/20' 
+              : 'bg-[#FFFFFF] border border-[#E4E4E0] text-[#6E6E77] hover:bg-[#F7F7F5] hover:text-[#18181B]'
           }`}
         >
           {i}
@@ -42,31 +43,34 @@ export default function Pagination({ currentPage, totalItems, limit, onPageChang
     return pages;
   };
 
+  const startIdx = (currentPage - 1) * limit + 1;
+  const endIdx = Math.min(currentPage * limit, totalItems);
+
   return (
-    <div className="flex items-center justify-between p-6 bg-gray-900 border-t border-gray-800">
-      <p className="text-sm text-gray-500 font-medium">
-        Hiển thị <span className="text-white font-bold">{(currentPage - 1) * limit + 1} - {Math.min(currentPage * limit, totalItems)}</span> trong số <span className="text-white font-bold">{totalItems}</span> bản ghi
+    <div className="flex items-center justify-between px-6 py-4 bg-[#FFFFFF] border-t border-[#E4E4E0]">
+      <p className="text-xs text-[#6E6E77] font-medium">
+        Hiển thị <span className="font-mono font-bold text-[#18181B]">{startIdx} - {endIdx}</span> trên tổng số <span className="font-mono font-bold text-[#18181B]">{totalItems}</span> bản ghi
       </p>
-      
-      <div className="flex items-center gap-2">
+
+      <div className="flex items-center gap-1.5">
         <button
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          onClick={() => onPageChange(currentPage - 1)}
-          className="p-2 bg-gray-800 rounded-xl text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className="flex items-center justify-center w-9 h-9 rounded-lg bg-[#FFFFFF] border border-[#E4E4E0] text-[#6E6E77] hover:text-[#18181B] hover:bg-[#F7F7F5] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          title="Trang trước"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft className="w-4 h-4" />
         </button>
 
-        <div className="flex items-center gap-2">
-          {renderPageNumbers()}
-        </div>
+        {renderPageNumbers()}
 
         <button
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          onClick={() => onPageChange(currentPage + 1)}
-          className="p-2 bg-gray-800 rounded-xl text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className="flex items-center justify-center w-9 h-9 rounded-lg bg-[#FFFFFF] border border-[#E4E4E0] text-[#6E6E77] hover:text-[#18181B] hover:bg-[#F7F7F5] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          title="Trang sau"
         >
-          <ChevronRight size={20} />
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>
