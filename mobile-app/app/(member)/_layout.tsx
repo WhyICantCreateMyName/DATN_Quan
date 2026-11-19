@@ -3,6 +3,7 @@ import { QrCode, CalendarClock, ActivitySquare, CalendarPlus, Dumbbell } from 'l
 import { useEffect, useState } from 'react';
 import { gymStorage } from '@/libs/storage';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { setAuthToken } from '@/services/apiClient';
 
 const COLORS = {
@@ -15,7 +16,12 @@ const COLORS = {
 
 export default function TabLayout() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
+
+  // Tính toán khoảng cách an toàn so với thanh vuốt cử chỉ điều hướng (Gesture bar / Home pill)
+  const bottomPadding = Math.max(insets.bottom, 12) + 6;
+  const tabHeight = 54 + bottomPadding;
 
   useEffect(() => {
      const verify = async () => {
@@ -45,8 +51,8 @@ export default function TabLayout() {
       tabBarStyle: { 
         backgroundColor: COLORS.card, 
         borderTopColor: COLORS.border,
-        height: 64,
-        paddingBottom: 8,
+        height: tabHeight,
+        paddingBottom: bottomPadding,
         paddingTop: 8,
       },
       tabBarActiveTintColor: COLORS.primary,
