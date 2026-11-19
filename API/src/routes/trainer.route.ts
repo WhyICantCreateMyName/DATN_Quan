@@ -41,10 +41,37 @@ router.get('/dashboard', async (req: Request, res: Response) => {
       where: { trainer: { userId: ptId }, status: 'PENDING' }
     });
 
+    // Tính tổng hoa hồng thực tế trong tháng từ CommissionLog
+    const commissionSum = await prisma.commissionLog.aggregate({
+      where: {
+        userId: ptId,
+        createdAt: { gte: firstDay }
+      },
+      _sum: { amount: true }
+    });
+    const commissionEarned = commissionSum._sum.amount || 0;
+
+    // Lấy chỉ tiêu KPI tháng này của PT nếu có
+    const kpi = await prisma.staffKPI.findUnique({
+      where: {
+        userId_month_year: {
+          userId: ptId,
+          month: now.getMonth() + 1,
+          year: now.getFullYear()
+        }
+      }
+    });
+
     res.json({
       completedThisMonth: completedBookings,
       pendingClasses: pendingBookings,
-      commissionEstimated: completedBookings * 150000 // Giả sử 150k/buổi
+      commissionEarned,
+      commissionEstimated: commissionEarned, // Tương thích ngược với UI cũ
+      kpi: kpi ? {
+        targetAmount: kpi.targetAmount,
+        achievedAmount: kpi.achievedAmount,
+        achievementPercent: kpi.targetAmount > 0 ? Math.round((kpi.achievedAmount / kpi.targetAmount) * 100) : 0
+      } : null
     });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });

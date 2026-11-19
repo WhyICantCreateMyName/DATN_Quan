@@ -4,6 +4,10 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Bắt đầu dọn dẹp và khởi tạo dữ liệu mẫu (Seeding)...');
 
+  await prisma.staffShift.deleteMany();
+  await prisma.commissionLog.deleteMany();
+  await prisma.staffKPI.deleteMany();
+  await prisma.commissionRate.deleteMany();
   await prisma.workoutExercise.deleteMany();
   await prisma.workoutLog.deleteMany();
   await prisma.booking.deleteMany();
@@ -51,23 +55,25 @@ async function main() {
   // 3. Tạo 15 Staff (ADMIN, PT, RECEPTIONIST)
   console.log('Tạo 15 Staff...');
   // Chắc chắn phải có Admin mặc định để test login admin-web
-  await prisma.user.create({
+  const adminUser = await prisma.user.create({
     data: {
       phone: '0902222222',
       passwordHash: '123456',
       fullName: 'ADMIN QUYỀN LỰC',
       role: 'ADMIN',
+      baseSalary: 15000000,
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
     }
   });
 
   // Tạo PT cố định để test
-  await prisma.user.create({
+  const ptMasterUser = await prisma.user.create({
     data: {
       phone: '0988888888',
       passwordHash: '123456',
       fullName: 'PT MASTER',
       role: 'PT',
+      baseSalary: 7000000,
       avatarUrl: 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=150',
       trainerProfile: {
         create: {
@@ -78,6 +84,7 @@ async function main() {
     }
   });
 
+  let receptionistUser: any = null;
   const roles = ['RECEPTIONIST', 'PT', 'PT', 'RECEPTIONIST'];
   const staffAvatars = [
     'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
@@ -92,12 +99,153 @@ async function main() {
       passwordHash: '123456',
       fullName: `Nhân Sự Số ${i} (${roleId})`,
       role: roleId || 'PT',
+      baseSalary: roleId === 'RECEPTIONIST' ? 8000000 : 7000000,
       avatarUrl: staffAvatars[i % staffAvatars.length]
     };
     if (roleId === 'PT') {
       data.trainerProfile = { create: { specialization: 'General Training' } };
     }
-    await prisma.user.create({ data });
+    const createdStaff = await prisma.user.create({ data });
+    if (roleId === 'RECEPTIONIST' && !receptionistUser) {
+      receptionistUser = createdStaff;
+    }
+  }
+
+  // 3.1. Cấu hình Tỷ Lệ Hoa Hồng Mặc Định (Commission Rates)
+  console.log('Tạo Cấu hình Hoa hồng mẫu...');
+  await prisma.commissionRate.create({
+    data: {
+      name: 'Hoa hồng dạy PT kèm',
+      type: 'FIXED',
+      value: 50000,
+      applyTo: 'SESSION'
+    }
+  });
+  await prisma.commissionRate.create({
+    data: {
+      name: 'Hoa hồng bán gói tập',
+      type: 'PERCENTAGE',
+      value: 10,
+      applyTo: 'SALE'
+    }
+  });
+  await prisma.commissionRate.create({
+    data: {
+      name: 'Hoa hồng bán lẻ sản phẩm POS',
+      type: 'PERCENTAGE',
+      value: 5,
+      applyTo: 'SALE'
+    }
+  });
+
+  // 3.2. Tạo Lịch Trực Ca Tuần Này (Staff Shifts)
+  console.log('Tạo Lịch trực ca mẫu...');
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+
+  const shiftTodayStart = new Date(now);
+  shiftTodayStart.setHours(8, 0, 0, 0);
+  const shiftTodayEnd = new Date(now);
+  shiftTodayEnd.setHours(14, 0, 0, 0);
+
+  await prisma.staffShift.create({
+    data: {
+      userId: ptMasterUser.id,
+      startTime: shiftTodayStart,
+      endTime: shiftTodayEnd,
+      note: 'Ca sáng - Trực sàn tạ tự do tầng 2 & Hỗ trợ đo Inbody'
+    }
+  });
+
+  const shiftTomorrowStart = new Date(now);
+  shiftTomorrowStart.setDate(shiftTomorrowStart.getDate() + 1);
+  shiftTomorrowStart.setHours(14, 0, 0, 0);
+  const shiftTomorrowEnd = new Date(now);
+  shiftTomorrowEnd.setDate(shiftTomorrowEnd.getDate() + 1);
+  shiftTomorrowEnd.setHours(21, 0, 0, 0);
+
+  await prisma.staffShift.create({
+    data: {
+      userId: ptMasterUser.id,
+      startTime: shiftTomorrowStart,
+      endTime: shiftTomorrowEnd,
+      note: 'Ca chiều tối - Hướng dẫn lớp học & Kèm khách PT'
+    }
+  });
+
+  if (receptionistUser) {
+    await prisma.staffShift.create({
+      data: {
+        userId: receptionistUser.id,
+        startTime: shiftTodayStart,
+        endTime: shiftTodayEnd,
+        note: 'Ca sáng - Trực quầy lễ tân sảnh chính & Check-in hội viên'
+      }
+    });
+  }
+
+  // 3.3. Thiết Lập Chỉ Tiêu KPI Tháng Hiện Tại (Staff KPIs)
+  console.log('Tạo Chỉ tiêu KPI mẫu...');
+  await prisma.staffKPI.create({
+    data: {
+      userId: ptMasterUser.id,
+      month: currentMonth,
+      year: currentYear,
+      targetAmount: 20000000,
+      achievedAmount: 14500000
+    }
+  });
+
+  if (receptionistUser) {
+    await prisma.staffKPI.create({
+      data: {
+        userId: receptionistUser.id,
+        month: currentMonth,
+        year: currentYear,
+        targetAmount: 30000000,
+        achievedAmount: 22800000
+      }
+    });
+  }
+
+  await prisma.staffKPI.create({
+    data: {
+      userId: adminUser.id,
+      month: currentMonth,
+      year: currentYear,
+      targetAmount: 100000000,
+      achievedAmount: 88500000
+    }
+  });
+
+  // 3.4. Nhật Ký Hoa Hồng Mẫu (Commission Logs)
+  console.log('Tạo Nhật ký hoa hồng mẫu...');
+  await prisma.commissionLog.create({
+    data: {
+      userId: ptMasterUser.id,
+      amount: 50000,
+      reason: 'Hoa hồng hoàn thành buổi tập PT - Hội viên Nguyễn Minh Quân',
+      createdAt: new Date()
+    }
+  });
+  await prisma.commissionLog.create({
+    data: {
+      userId: ptMasterUser.id,
+      amount: 50000,
+      reason: 'Hoa hồng hoàn thành buổi tập PT cá nhân',
+      createdAt: new Date(Date.now() - 86400000)
+    }
+  });
+  if (receptionistUser) {
+    await prisma.commissionLog.create({
+      data: {
+        userId: receptionistUser.id,
+        amount: 500000,
+        reason: 'Hoa hồng 10% tư vấn thành công Gói Diamond 180 ngày',
+        createdAt: new Date()
+      }
+    });
   }
 
   // 4. Tạo 25 Members (Khách Hàng)

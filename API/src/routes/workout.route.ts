@@ -69,9 +69,16 @@ router.post('/', async (req: Request, res: Response) => {
     let workoutDate = new Date();
     if (bookingId) {
       const booking = await prisma.booking.findUnique({ where: { id: Number(bookingId) } });
-      if (booking) {
-        workoutDate = booking.startTime;
+      if (!booking) {
+        return res.status(404).json({ error: 'Lịch hẹn (Booking) không tồn tại' });
       }
+      if (booking.memberId !== Number(memberId)) {
+        return res.status(400).json({ error: 'Lịch hẹn không khớp với hội viên này' });
+      }
+      if (booking.trainerId && booking.trainerId !== ptId) {
+        return res.status(403).json({ error: 'Bạn không phải là huấn luyện viên phụ trách buổi tập này' });
+      }
+      workoutDate = booking.startTime;
     }
 
     const log = await prisma.workoutLog.create({

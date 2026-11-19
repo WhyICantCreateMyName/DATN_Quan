@@ -2,343 +2,425 @@ import { View, Text, ScrollView, RefreshControl, StyleSheet, TouchableOpacity, M
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useCallback, useEffect } from 'react';
 import { memberService } from '@/services/memberApi';
-import { Search, Clock, CalendarDays, Plus, X } from 'lucide-react-native';
+import { Clock, Calendar, Plus, X, User, Dumbbell, QrCode as QrIcon, CheckCircle2, AlertCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
-
-const COLORS = {
-   background: '#020617',
-   card: '#0f172a',
-   primary: '#39FF14', // Đổi sang màu Neon Green cho TitanGym
-   textMain: '#ffffff',
-   textSecondary: '#94a3b8',
-   border: '#1e293b',
-   ptIconBg: 'rgba(57, 255, 20, 0.1)',
-   groupIconBg: 'rgba(168, 85, 247, 0.1)',
-   groupIcon: '#a855f7'
-};
+import { KINETIC_THEME, KINETIC_FONTS } from '@/constants/theme';
+import { formatDate } from '@/libs/utils';
 
 export default function ScheduleScreen() {
-   const router = useRouter();
-   const [schedule, setSchedule] = useState<any[]>([]);
-   const [refreshing, setRefreshing] = useState(false);
-   
-   const [qrModal, setQrModal] = useState(false);
-   const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const router = useRouter();
+  const [schedule, setSchedule] = useState<any[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-   const load = async () => {
-      try {
-         const res = await memberService.getSchedule();
-         setSchedule(res.data);
-      } catch (e) { }
-   };
+  const [qrModal, setQrModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
 
-   useEffect(() => { load(); }, []);
+  const load = async () => {
+    try {
+      const res = await memberService.getSchedule();
+      setSchedule(res.data || []);
+    } catch (e) {
+      console.error('Error fetching schedule:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-   const onRefresh = useCallback(() => {
-      setRefreshing(true);
-      load().then(() => setRefreshing(false));
-   }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
-   const openQR = (booking: any) => {
-      if (booking.status === 'COMPLETED' || booking.status === 'CANCELLED') return;
-      setSelectedBooking(booking);
-      setQrModal(true);
-   };
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    load().then(() => setRefreshing(false));
+  }, []);
 
-   return (
-      <SafeAreaView style={styles.container}>
-         <View style={styles.header}>
-            <Text style={styles.headerTitle}>Lịch hẹn Tập</Text>
-            <View style={styles.headerActions}>
-               <TouchableOpacity onPress={() => router.push('/(member)/explore' as any)} style={styles.addButton}>
-                  <Plus color="#000" size={20} />
-               </TouchableOpacity>
-            </View>
-         </View>
+  const openQR = (booking: any) => {
+    if (booking.status === 'COMPLETED' || booking.status === 'CANCELLED') return;
+    setSelectedBooking(booking);
+    setQrModal(true);
+  };
 
-         <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />} style={styles.scroll}>
-            {schedule.map((item, id) => {
-               const st = new Date(item.startTime);
-               const et = new Date(item.endTime);
-               const isPT = !!item.trainer;
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'CONFIRMED':
+        return {
+          label: 'ĐÃ XÁC NHẬN',
+          bg: 'rgba(200, 241, 53, 0.15)',
+          color: KINETIC_THEME.accentPrimary,
+        };
+      case 'COMPLETED':
+        return {
+          label: 'HOÀN THÀNH',
+          bg: 'rgba(16, 185, 129, 0.15)',
+          color: '#10B981',
+        };
+      case 'CANCELLED':
+        return {
+          label: 'ĐÃ HỦY',
+          bg: 'rgba(255, 90, 54, 0.15)',
+          color: KINETIC_THEME.accentSecondary,
+        };
+      default:
+        return {
+          label: 'CHỜ DUYỆT',
+          bg: 'rgba(244, 245, 240, 0.1)',
+          color: KINETIC_THEME.textMuted,
+        };
+    }
+  };
 
-               return (
-                  <TouchableOpacity 
-                     key={id} 
-                     style={[styles.card, item.status === 'COMPLETED' && { opacity: 0.5 }]} 
-                     onPress={() => isPT && openQR(item)}
-                     activeOpacity={isPT ? 0.7 : 1}
-                  >
-                     <View style={styles.cardHeader}>
-                        <View style={styles.iconContainer}>
-                           <View style={[styles.iconBg, { backgroundColor: isPT ? COLORS.ptIconBg : COLORS.groupIconBg }]}>
-                              <CalendarDays color={isPT ? COLORS.primary : COLORS.groupIcon} size={22} />
-                           </View>
-                           <View style={styles.textContainer}>
-                              <View style={styles.titleRow}>
-                                 <Text style={styles.itemTitle}>{isPT ? 'Tập PT Cá nhân' : item.groupClass?.name}</Text>
-                                 <View style={[styles.statusBadge, item.status === 'COMPLETED' ? styles.statusSuccess : styles.statusPending]}>
-                                    <Text style={styles.statusText}>{item.status}</Text>
-                                 </View>
-                              </View>
-                              <Text style={styles.itemSubtitle}>{isPT ? `Huấn luyện viên: ${item.trainer.user.fullName}` : 'Lớp học nhóm'}</Text>
-                           </View>
-                        </View>
-                     </View>
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerSubtitle}>LỊCH TẬP & ĐẶT CHỖ</Text>
+          <Text style={styles.headerTitle}>Lịch Hẹn Của Bạn</Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => router.push('/(member)/explore' as any)}
+          style={styles.addButton}
+          activeOpacity={0.8}
+        >
+          <Plus color={KINETIC_THEME.textOnAccent} size={20} />
+        </TouchableOpacity>
+      </View>
 
-                     <View style={styles.timeSection}>
-                        <Clock color={COLORS.primary} size={16} style={{ marginRight: 8 }} />
-                        <Text style={styles.timeText}>
-                           {st.toLocaleDateString('vi-VN')} • {st.getHours()}:{st.getMinutes().toString().padStart(2, '0')} - {et.getHours()}:{et.getMinutes().toString().padStart(2, '0')}
-                        </Text>
-                     </View>
-                     
-                     {isPT && item.status !== 'COMPLETED' && (
-                        <Text style={styles.tapTip}>Nhấn để hiển thị mã xác nhận</Text>
-                     )}
-                  </TouchableOpacity>
-               );
-            })}
-            {schedule.length === 0 && (
-               <View style={styles.emptyState}>
-                  <Text style={styles.emptyTitle}>Chưa có lịch hẹn nào</Text>
-                  <Text style={styles.emptySubtitle}>Bạn có thể đặt lịch PT qua mục "Huấn luyện viên"</Text>
-               </View>
-            )}
-         </ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={KINETIC_THEME.accentPrimary}
+          />
+        }
+        style={styles.scrollView}
+        contentContainerStyle={{ paddingBottom: 48 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {schedule.length === 0 && !loading ? (
+          <View style={styles.emptyContainer}>
+            <Calendar size={40} color={KINETIC_THEME.textMuted} />
+            <Text style={styles.emptyTitle}>Chưa có lịch hẹn nào</Text>
+            <Text style={styles.emptyDesc}>
+              Bấm dấu &quot;+&quot; góc phải để chọn huấn luyện viên hoặc đăng ký lớp học GroupX.
+            </Text>
+          </View>
+        ) : (
+          schedule.map((item) => {
+            const isPT = !!item.trainer;
+            const statusInfo = getStatusBadge(item.status);
+            const startTimeStr = new Date(item.startTime).toLocaleTimeString('vi-VN', {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+            const endTimeStr = new Date(item.endTime).toLocaleTimeString('vi-VN', {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
 
-         <Modal visible={qrModal} transparent animationType="fade">
-            <View style={styles.modalBg}>
-               <View style={styles.modalContent}>
-                  <TouchableOpacity style={styles.closeBtn} onPress={() => setQrModal(false)}>
-                     <X color="#fff" size={24} />
-                  </TouchableOpacity>
-                  
-                  <Text style={styles.modalTitle}>Mã Xác Nhận Buổi Tập</Text>
-                  <Text style={styles.modalSubtitle}>Đưa mã này cho PT của bạn quét khi kết thúc buổi tập để xác nhận hoàn thành.</Text>
-                  
-                  <View style={styles.qrContainer}>
-                     <QRCode 
-                        value={JSON.stringify({ bookingId: selectedBooking?.id, type: 'SESSION_COMPLETE' })}
-                        size={200}
-                        backgroundColor={COLORS.card}
-                        color={COLORS.primary}
-                     />
+            return (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.card}
+                onPress={() => openQR(item)}
+                activeOpacity={item.status === 'COMPLETED' ? 1 : 0.7}
+              >
+                {/* Top Row: Type & Status */}
+                <View style={styles.cardTop}>
+                  <View style={styles.typeBadge}>
+                    {isPT ? (
+                      <Dumbbell size={13} color={KINETIC_THEME.accentPrimary} />
+                    ) : (
+                      <Calendar size={13} color="#A855F7" />
+                    )}
+                    <Text
+                      style={[
+                        styles.typeText,
+                        { color: isPT ? KINETIC_THEME.accentPrimary : '#A855F7' },
+                      ]}
+                    >
+                      {isPT ? 'BUỔI TẬP KÈM PT' : 'LỚP HỌC GROUPX'}
+                    </Text>
                   </View>
-                  
-                  <View style={styles.bookingSummary}>
-                     <Text style={styles.summaryText}>HLV: {selectedBooking?.trainer?.user?.fullName}</Text>
-                     <Text style={styles.summaryTime}>
-                        {new Date(selectedBooking?.startTime).toLocaleDateString('vi-VN')}
-                     </Text>
+
+                  <View style={[styles.statusBadge, { backgroundColor: statusInfo.bg }]}>
+                    <Text style={[styles.statusText, { color: statusInfo.color }]}>
+                      {statusInfo.label}
+                    </Text>
                   </View>
-               </View>
+                </View>
+
+                {/* Main Info */}
+                <Text style={styles.sessionTitle}>
+                  {isPT
+                    ? `Buổi tập với ${item.trainer?.user?.fullName || 'Huấn luyện viên'}`
+                    : item.groupClass?.name || 'Lớp học nhóm'}
+                </Text>
+
+                {/* Time & Date */}
+                <View style={styles.timeBox}>
+                  <View style={styles.timeItem}>
+                    <Calendar size={14} color={KINETIC_THEME.textMuted} />
+                    <Text style={styles.timeText}>{formatDate(item.startTime)}</Text>
+                  </View>
+                  <View style={styles.timeItem}>
+                    <Clock size={14} color={KINETIC_THEME.accentPrimary} />
+                    <Text style={[styles.timeText, { color: KINETIC_THEME.accentPrimary, fontWeight: '700' }]}>
+                      {startTimeStr} - {endTimeStr}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Footer action hint */}
+                {item.status !== 'COMPLETED' && item.status !== 'CANCELLED' && (
+                  <View style={styles.qrPrompt}>
+                    <QrIcon size={14} color={KINETIC_THEME.textMuted} />
+                    <Text style={styles.qrPromptText}>
+                      Chạm để mở mã QR hoàn thành buổi tập với PT
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })
+        )}
+      </ScrollView>
+
+      {/* QR Modal for Check-Out */}
+      <Modal visible={qrModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Xác Nhận Buổi Tập</Text>
+              <TouchableOpacity onPress={() => setQrModal(false)} style={styles.closeBtn}>
+                <X size={18} color={KINETIC_THEME.textMuted} />
+              </TouchableOpacity>
             </View>
-         </Modal>
-      </SafeAreaView>
-   );
+
+            <Text style={styles.modalSubtitle}>
+              Đưa mã QR này cho PT để xác nhận hoàn thành buổi tập và cập nhật ví số buổi.
+            </Text>
+
+            <View style={styles.qrContainer}>
+              {selectedBooking && (
+                <QRCode
+                  value={`TITAN-BOOKING-${selectedBooking.id}-${selectedBooking.memberId}`}
+                  size={200}
+                  color={KINETIC_THEME.background}
+                  backgroundColor="#FFFFFF"
+                />
+              )}
+            </View>
+
+            <View style={styles.bookingIdBadge}>
+              <Text style={styles.bookingIdText}>
+                MÃ LỊCH HẸN: #{selectedBooking?.id}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-   container: {
-      flex: 1,
-      backgroundColor: COLORS.background,
-   },
-   header: {
-      paddingHorizontal: 24,
-      paddingVertical: 24,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-   },
-   headerTitle: {
-      color: COLORS.textMain,
-      fontSize: 24,
-      fontWeight: '900',
-      textTransform: 'uppercase',
-      fontStyle: 'italic',
-   },
-   headerActions: {
-      flexDirection: 'row',
-      alignItems: 'center',
-   },
-   addButton: {
-      width: 40,
-      height: 40,
-      backgroundColor: COLORS.primary,
-      borderRadius: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-   },
-   scroll: {
-      flex: 1,
-      paddingHorizontal: 24,
-      paddingTop: 24,
-   },
-   card: {
-      backgroundColor: COLORS.card,
-      borderRadius: 24,
-      padding: 20,
-      marginBottom: 16,
-      borderWidth: 1,
-      borderColor: COLORS.border,
-   },
-   cardHeader: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      justifyContent: 'space-between',
-      marginBottom: 16,
-   },
-   iconContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flex: 1,
-   },
-   iconBg: {
-      width: 48,
-      height: 48,
-      borderRadius: 14,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginRight: 16,
-   },
-   textContainer: {
-      flex: 1,
-   },
-   titleRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-   },
-   itemTitle: {
-      color: COLORS.textMain,
-      fontWeight: '800',
-      fontSize: 16,
-   },
-   statusBadge: {
-      paddingHorizontal: 8,
-      paddingVertical: 2,
-      borderRadius: 6,
-   },
-   statusPending: {
-      backgroundColor: 'rgba(245, 158, 11, 0.1)',
-   },
-   statusSuccess: {
-      backgroundColor: 'rgba(57, 255, 20, 0.1)',
-   },
-   statusText: {
-      fontSize: 8,
-      fontWeight: '900',
-      color: COLORS.textMain,
-      textTransform: 'uppercase',
-   },
-   itemSubtitle: {
-      color: COLORS.textSecondary,
-      marginTop: 2,
-      fontSize: 13,
-   },
-   timeSection: {
-      backgroundColor: COLORS.background,
-      borderRadius: 16,
-      padding: 12,
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.05)',
-   },
-   timeText: {
-      color: COLORS.primary,
-      fontWeight: '800',
-      fontSize: 13,
-   },
-   tapTip: {
-      color: COLORS.textSecondary,
-      fontSize: 10,
-      textAlign: 'center',
-      marginTop: 12,
-      fontStyle: 'italic',
-   },
-   emptyState: {
-      alignItems: 'center',
-      marginTop: 80,
-   },
-   emptyTitle: {
-      color: COLORS.textSecondary,
-      fontWeight: '700',
-      fontSize: 16,
-      marginBottom: 8,
-   },
-   emptySubtitle: {
-      color: '#475569',
-      textAlign: 'center',
-      fontSize: 14,
-      paddingHorizontal: 32,
-   },
-   modalBg: {
-      flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.9)',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 24,
-   },
-   modalContent: {
-      width: '100%',
-      backgroundColor: COLORS.card,
-      borderRadius: 32,
-      padding: 32,
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: COLORS.border,
-   },
-   closeBtn: {
-      position: 'absolute',
-      top: 20,
-      right: 20,
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: 'rgba(255,255,255,0.05)',
-      alignItems: 'center',
-      justifyContent: 'center',
-   },
-   modalTitle: {
-      color: COLORS.textMain,
-      fontSize: 22,
-      fontWeight: '900',
-      marginTop: 20,
-      textAlign: 'center',
-   },
-   modalSubtitle: {
-      color: COLORS.textSecondary,
-      fontSize: 14,
-      textAlign: 'center',
-      marginTop: 12,
-      marginBottom: 32,
-      lineHeight: 20,
-   },
-   qrContainer: {
-      padding: 20,
-      backgroundColor: '#fff',
-      borderRadius: 24,
-   },
-   bookingSummary: {
-      marginTop: 32,
-      alignItems: 'center',
-   },
-   summaryText: {
-      color: COLORS.textMain,
-      fontWeight: '800',
-      fontSize: 16,
-   },
-   summaryTime: {
-      color: COLORS.primary,
-      fontWeight: '700',
-      fontSize: 14,
-      marginTop: 4,
-   }
+  container: {
+    flex: 1,
+    backgroundColor: KINETIC_THEME.background,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: KINETIC_THEME.border,
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: KINETIC_THEME.accentPrimary,
+    letterSpacing: 1.5,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: KINETIC_THEME.textPrimary,
+    marginTop: 2,
+  },
+  addButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: KINETIC_THEME.accentPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  emptyContainer: {
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: KINETIC_THEME.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+    marginTop: 20,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: KINETIC_THEME.textPrimary,
+    marginTop: 12,
+  },
+  emptyDesc: {
+    fontSize: 12,
+    color: KINETIC_THEME.textMuted,
+    textAlign: 'center',
+    marginTop: 6,
+    lineHeight: 18,
+  },
+  card: {
+    backgroundColor: KINETIC_THEME.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+    padding: 18,
+    marginBottom: 14,
+  },
+  cardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  typeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  typeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  sessionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: KINETIC_THEME.textPrimary,
+    marginBottom: 12,
+  },
+  timeBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    backgroundColor: KINETIC_THEME.background,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+    padding: 10,
+  },
+  timeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  timeText: {
+    fontSize: 12,
+    color: KINETIC_THEME.textPrimary,
+    fontWeight: '600',
+  },
+  qrPrompt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: KINETIC_THEME.border,
+  },
+  qrPromptText: {
+    fontSize: 11,
+    color: KINETIC_THEME.textMuted,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: KINETIC_THEME.surface,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+    padding: 24,
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: KINETIC_THEME.textPrimary,
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  modalSubtitle: {
+    fontSize: 12,
+    color: KINETIC_THEME.textMuted,
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 18,
+  },
+  qrContainer: {
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  bookingIdBadge: {
+    backgroundColor: KINETIC_THEME.background,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+  },
+  bookingIdText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: KINETIC_THEME.accentPrimary,
+    letterSpacing: 1,
+  },
 });
-
-

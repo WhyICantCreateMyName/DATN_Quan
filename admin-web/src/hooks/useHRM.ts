@@ -9,27 +9,36 @@ export const useHRM = () => {
   const [rates, setRates] = useState<HRMType.CommissionRate[]>([]);
   const [kpis, setKpis] = useState<HRMType.StaffKPI[]>([]);
   const [logs, setLogs] = useState<HRMType.CommissionLog[]>([]);
+  const [payroll, setPayroll] = useState<HRMType.PayrollItem[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
 
   const fetchData = useCallback(async (staffPage = 1) => {
     setLoading(true);
     try {
-      const [st, s, r, k, l] = await Promise.all([
+      const [st, s, r, k, lRes, pRes] = await Promise.all([
         userService.getStaff(staffPage),
         hrmService.getShifts(),
         hrmService.getCommissionRates(),
-        hrmService.getKPIs(new Date().getMonth() + 1, new Date().getFullYear()),
-        hrmService.getCommissionLogs()
+        hrmService.getKPIs(currentMonth, currentYear),
+        hrmService.getCommissionLogs(undefined, currentMonth, currentYear),
+        hrmService.getPayroll(currentMonth, currentYear)
       ]);
       setStaff(st);
       setShifts(s);
       setRates(r);
       setKpis(k);
-      setLogs(l);
+      setLogs(lRes?.data || []);
+      setPayroll(pRes?.data || []);
+    } catch (e) {
+      console.error('Error fetching HRM data:', e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentMonth, currentYear]);
 
   useEffect(() => {
     fetchData();
@@ -47,17 +56,60 @@ export const useHRM = () => {
     }
   };
 
+  const handleCreateShift = async (data: HRMType.ShiftCreateInput) => {
+    const res = await hrmService.createShift(data);
+    await fetchData(staff?.page || 1);
+    return res;
+  };
+
+  const handleDeleteShift = async (id: number) => {
+    if (confirm('Bạn có chắc chắn muốn xóa ca trực này?')) {
+      await hrmService.deleteShift(id);
+      await fetchData(staff?.page || 1);
+    }
+  };
+
+  const handleSaveCommission = async (data: HRMType.CommissionRateInput) => {
+    const res = await hrmService.saveCommissionRate(data);
+    await fetchData(staff?.page || 1);
+    return res;
+  };
+
+  const handleDeleteCommission = async (id: number) => {
+    if (confirm('Bạn có chắc chắn muốn xóa chính sách hoa hồng này?')) {
+      await hrmService.deleteCommissionRate(id);
+      await fetchData(staff?.page || 1);
+    }
+  };
+
+  const handleSaveKPI = async (data: HRMType.KPICreateInput) => {
+    const res = await hrmService.saveKPI(data);
+    await fetchData(staff?.page || 1);
+    return res;
+  };
+
+  const handleDeleteKPI = async (id: number) => {
+    if (confirm('Bạn có chắc chắn muốn xóa chỉ tiêu KPI này?')) {
+      await hrmService.deleteKPI(id);
+      await fetchData(staff?.page || 1);
+    }
+  };
+
   return {
     staff,
     shifts,
     rates,
     kpis,
     logs,
+    payroll,
     loading,
     refresh: fetchData,
-    createShift: hrmService.createShift,
-    saveCommission: hrmService.saveCommissionRate,
-    saveKPI: hrmService.saveKPI,
+    createShift: handleCreateShift,
+    deleteShift: handleDeleteShift,
+    saveCommission: handleSaveCommission,
+    deleteCommission: handleDeleteCommission,
+    saveKPI: handleSaveKPI,
+    deleteKPI: handleDeleteKPI,
     updateStaff,
     deleteStaff
   };

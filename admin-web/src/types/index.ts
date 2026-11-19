@@ -11,3 +11,4 @@ export * as ProductType from './product';
 export * as UserType from './user';
 export * as StatsType from './stats';
 export * as HRMType from './hrm';
+export * as POSType from './pos';

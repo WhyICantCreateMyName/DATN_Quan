@@ -171,70 +171,75 @@ flowchart TD
 ---
 
 ### 💳 SPRINT 3: Bán Hàng POS, Kho & Hóa Đơn (Product, Invoice, InvoiceItem)
-- [ ] **Bước 1: Đối chiếu & Review**
-  - [ ] Soi code `pos.route.ts`, `payment.route.ts`, `stats.route.ts` với quy trình Thu ngân & Kho trong `Nghiệp_vụ.txt`
-  - [ ] Tạo tài liệu `SPRINT_3_REVIEW.md`
-- [ ] **Bước 2: Kế hoạch Sprint 3**
-  - [ ] Tạo tài liệu `SPRINT_3_PLAN.md`
-- [ ] **Bước 2.5: User thông qua plan**
-- [ ] **Bước 3: Tái cấu trúc Logic & Schema**
-  - [ ] Schema: Thêm cột `InvoiceItem.unitPrice`
-  - [ ] Migration & Generate Prisma Client
-  - [ ] Sửa `pos.route.ts`: Bổ sung Transaction trừ tồn kho `Product.stock` khi bán lẻ
-  - [ ] Sửa `pos.route.ts`: Khi bán gói tập tại quầy, cộng dồn buổi PT vào ví khách
-  - [ ] Sửa `payment.route.ts`: Khi MoMo IPN thành công, tạo ngay `Invoice` + `InvoiceItem` và cộng buổi vào ví khách
-- [ ] **Bước 4: Tái cấu trúc Giao diện (Anthropic UI)**
-  - [ ] Thiết kế lại màn hình POS Bán hàng trên Admin Web: Bố cục 2 cột trực quan (Danh mục lưới sản phẩm bên trái, Giỏ hàng & Hóa đơn bên phải, phím tắt nhanh)
-  - [ ] Thiết kế lại giao diện Quản lý kho hàng (`/inventory`)
-- [ ] **Bước 5: Sprint Review & Nghiệm thu**
-  - [ ] Bán 2 chai nước -> Tồn kho giảm đúng 2
-  - [ ] Thanh toán MoMo -> Dashboard Admin nhảy số doanh thu ngay lập tức
+- [x] **Bước 1: Đối chiếu & Review**
+  - [x] Soi code `pos.route.ts`, `payment.route.ts`, `stats.route.ts` với quy trình Thu ngân & Kho trong `Nghiệp_vụ.txt`
+  - [x] Tạo tài liệu `SPRINT_3_REVIEW.md`
+- [x] **Bước 2: Kế hoạch Sprint 3**
+  - [x] Tạo tài liệu `SPRINT_3_PLAN.md`
+- [x] **Bước 2.5: User thông qua plan**
+- [x] **Bước 3: Tái cấu trúc Logic & Schema**
+  - [x] Schema: Thêm cột `InvoiceItem.unitPrice`
+  - [x] Migration & Generate Prisma Client
+  - [x] Sửa `pos.route.ts`: Bổ sung Transaction trừ tồn kho `Product.stock` khi bán lẻ
+  - [x] Sửa `pos.route.ts`: Khi bán gói tập tại quầy, cộng dồn buổi PT vào ví khách
+  - [x] Sửa `payment.route.ts`: Khi MoMo IPN thành công, tạo ngay `Invoice` + `InvoiceItem` và cộng buổi vào ví khách
+- [x] **Bước 4: Tái cấu trúc Giao diện (Anthropic UI)**
+  - [x] Thiết kế lại màn hình POS Bán hàng trên Admin Web: Bố cục 2 cột trực quan (Danh mục lưới sản phẩm bên trái, Giỏ hàng & Hóa đơn bên phải, phím tắt nhanh)
+  - [x] Thiết kế lại giao diện Quản lý kho hàng (`/inventory`)
+- [x] **Bước 5: Sprint Review & Nghiệm thu**
+  - [x] Bán 2 chai nước -> Tồn kho giảm đúng 2
+  - [x] Thanh toán MoMo -> Dashboard Admin nhảy số doanh thu ngay lập tức
 
 ---
 
 ### 🥊 SPRINT 4: Vận Hành Lớp Học, Đặt Lịch & Giáo Án (GroupClass, Booking, WorkoutLog, WorkoutExercise)
-- [ ] **Bước 1: Đối chiếu & Review**
-  - [ ] Soi code `booking.route.ts`, `workout.route.ts` với 4 quy tắc Booking Rules trong `Nghiệp_vụ.txt`
-  - [ ] Tạo tài liệu `SPRINT_4_REVIEW.md`
-- [ ] **Bước 2: Kế hoạch Sprint 4**
-  - [ ] Tạo tài liệu `SPRINT_4_PLAN.md`
-- [ ] **Bước 2.5: User thông qua plan**
-- [ ] **Bước 3: Tái cấu trúc Logic & Schema**
-  - [ ] Schema: Thêm `GroupClass.trainerId` liên kết với `TrainerProfile`
-  - [ ] Migration & Generate Prisma Client
-  - [ ] Sửa `booking.route.ts`: Bổ sung kiểm tra hạn thẻ active khi đặt lớp
-  - [ ] Sửa `booking.route.ts`: Bổ sung kiểm tra sĩ số lớp (`capacity`) chống quá tải
-  - [ ] Sửa `booking.route.ts`: Bổ sung kiểm tra lịch rảnh của PT (`TrainerAvailability`)
-  - [ ] Thống nhất 2 API hoàn thành buổi tập về 1 luồng chuẩn
-- [ ] **Bước 4: Tái cấu trúc Giao diện (Anthropic UI)**
-  - [ ] Thiết kế lại giao diện Đặt lịch & Lịch tập (Calendar) trên Mobile App (cho cả Member và PT)
-  - [ ] Thiết kế lại giao diện Quản lý thời khóa biểu lớp học trên Admin Web (`/schedule`)
-  - [ ] Thiết kế lại form nhập Giáo án & Bài tập cho PT trên Mobile
-- [ ] **Bước 5: Sprint Review & Nghiệm thu**
-  - [ ] Test đặt lớp khi hết hạn thẻ -> Bị chặn
-  - [ ] Test đặt lớp quá sĩ số -> Bị chặn
-  - [ ] Test PT quét mã QR xác nhận -> Ví khách trừ 1 buổi, lịch chuyển COMPLETED
+- [x] **Bước 1: Đối chiếu & Review**
+  - [x] Soi code `booking.route.ts`, `workout.route.ts` với 4 quy tắc Booking Rules trong `Nghiệp_vụ.txt`
+  - [x] Tạo tài liệu `SPRINT_4_REVIEW.md`
+- [x] **Bước 2: Kế hoạch Sprint 4**
+  - [x] Tạo tài liệu `SPRINT_4_PLAN.md`
+- [x] **Bước 2.5: User thông qua plan**
+- [x] **Bước 3: Tái cấu trúc Logic & Schema**
+  - [x] Schema: Thêm `GroupClass.trainerId` liên kết với `TrainerProfile`
+  - [x] Migration & Generate Prisma Client
+  - [x] Sửa `booking.route.ts`: Bổ sung kiểm tra hạn thẻ active khi đặt lớp
+  - [x] Sửa `booking.route.ts`: Bổ sung kiểm tra sĩ số lớp (`capacity`) chống quá tải
+  - [x] Sửa `booking.route.ts`: Bổ sung kiểm tra lịch rảnh của PT (`TrainerAvailability`)
+  - [x] Thống nhất 2 API hoàn thành buổi tập về 1 luồng chuẩn
+- [x] **Bước 4: Tái cấu trúc Giao diện (Anthropic UI)**
+  - [x] Thiết kế lại giao diện Đặt lịch & Lịch tập (Calendar) trên Mobile App (cho cả Member và PT)
+  - [x] Thiết kế lại giao diện Quản lý thời khóa biểu lớp học trên Admin Web (`/schedule`)
+  - [x] Thiết kế lại form nhập Giáo án & Bài tập cho PT trên Mobile
+- [x] **Bước 5: Sprint Review & Nghiệm thu**
+  - [x] Test đặt lớp khi hết hạn thẻ -> Bị chặn
+  - [x] Test đặt lớp quá sĩ số -> Bị chặn
+  - [x] Test PT quét mã QR xác nhận -> Ví khách trừ 1 buổi, lịch chuyển COMPLETED
 
 ---
 
 ### 📊 SPRINT 5: Quản Trị Nhân Sự, Hoa Hồng & KPI (StaffShift, CommissionRate, StaffKPI, CommissionLog)
-- [ ] **Bước 1: Đối chiếu & Review**
-  - [ ] Soi code `hrm.route.ts`, `trainer.route.ts` (dashboard) với quy định tính lương/thưởng trong `Nghiệp_vụ.txt`
-  - [ ] Tạo tài liệu `SPRINT_5_REVIEW.md`
-- [ ] **Bước 2: Kế hoạch Sprint 5**
-  - [ ] Tạo tài liệu `SPRINT_5_PLAN.md`
-- [ ] **Bước 2.5: User thông qua plan**
-- [ ] **Bước 3: Tái cấu trúc Logic & Seed Data**
-  - [ ] Schema: Giữ nguyên cấu trúc
-  - [ ] Nạp dữ liệu seed chuẩn vào `seed.ts`: Chính sách hoa hồng (Dạy PT 50k, Bán gói 10%), Lịch trực tuần, Chỉ tiêu KPI tháng
-  - [ ] Sửa `trainer.route.ts`: Xóa bỏ số hardcode 150k, đọc thu nhập từ `CommissionRate` / `CommissionLog`
-  - [ ] Sửa `booking.route.ts`: Xóa bỏ số hardcode 50k, đọc từ `CommissionRate`
-- [ ] **Bước 4: Tái cấu trúc Giao diện (Anthropic UI)**
-  - [ ] Thiết kế lại toàn diện trang Quản trị Nhân sự (`/staff`) trên Admin Web với 4 tab sạch đẹp, chuyên nghiệp:
-    + Tab 1: Danh sách nhân sự & Phân quyền
-    + Tab 2: Lịch trực tuần (Shift Calendar)
-    + Tab 3: Cấu hình hoa hồng & Lịch sử chi trả
-    + Tab 4: Bảng theo dõi KPI doanh số (Thanh tiến độ, tỷ lệ hoàn thành)
-- [ ] **Bước 5: Sprint Review & Nghiệm thu**
-  - [ ] Mở `/staff` thấy 4 tab sáng đèn đầy đủ số liệu thực tế
-  - [ ] Dashboard PT trên Mobile khớp hoàn toàn số tiền hoa hồng với Admin Web
+- [x] **Bước 1: Đối chiếu & Review**
+  - [x] Soi code `hrm.route.ts`, `trainer.route.ts` (dashboard) với quy định tính lương/thưởng trong `Nghiệp_vụ.txt`
+  - [x] Tạo tài liệu `SPRINT_5_REVIEW.md`
+- [x] **Bước 2: Kế hoạch Sprint 5**
+  - [x] Tạo tài liệu `SPRINT_5_PLAN.md`
+- [x] **Bước 2.5: User thông qua plan**
+- [x] **Bước 3: Tái cấu trúc Logic & Seed Data**
+  - [x] Schema: Thêm `User.baseSalary` và `StaffKPI.@@unique([userId, month, year])`
+  - [x] Nạp dữ liệu seed chuẩn vào `seed.ts`: Chính sách hoa hồng (Dạy PT 50k, Bán gói 10%), Lịch trực tuần, Chỉ tiêu KPI tháng, Nhật ký hoa hồng mẫu
+  - [x] Sửa `trainer.route.ts`: Xóa bỏ số hardcode 150k, đọc thu nhập từ `CommissionLog.aggregate` và trả về kèm tiến độ KPI tháng
+  - [x] Sửa `booking.route.ts`: Đọc từ `CommissionRate`
+  - [x] Bổ sung API Bảng lương tự động `/hrm/payroll` (Lương cứng + Hoa hồng + Đánh giá xếp loại)
+- [x] **Bước 4: Tái cấu trúc Giao diện (Warm Editorial & Kinetic Dark)**
+  - [x] Thiết kế lại toàn diện trang Quản trị Nhân sự (`/staff`) trên Admin Web với 4 tab sạch đẹp, chuyên nghiệp:
+    + Tab 1: Danh sách nhân sự & Phân quyền (`StaffTable`)
+    + Tab 2: Lịch trực tuần (`ShiftManagement` & `ModalCreateShift`)
+    + Tab 3: Cấu hình hoa hồng & Bảng tính lương tự động (`PayrollManagement` & `ModalCommissionRate`)
+    + Tab 4: Bảng theo dõi KPI doanh số (`KpiManagement` & `ModalSetKpi`)
+  - [x] Thiết kế lại giao diện PT trên Mobile App sang High-Performance Kinetic Dark (`index.tsx`, `clients.tsx`, `schedule.tsx`, `availability.tsx`)
+- [x] **Bước 5: Sprint Review & Nghiệm thu**
+  - [x] Mở `/staff` thấy 4 tab sáng đèn đầy đủ số liệu thực tế
+  - [x] Dashboard PT trên Mobile khớp hoàn toàn số tiền hoa hồng với Admin Web
+  - [x] Script `verify_sprint5.ts` vượt qua toàn bộ 5 bài kiểm tra với 0 lỗi
+  - [x] Admin Web Turbopack build 15 routes tĩnh 100% không lỗi
+  - [x] Mobile App `tsc` không có bất kỳ lỗi TypeScript nào

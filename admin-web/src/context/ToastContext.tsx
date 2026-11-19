@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { X, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
-export type ToastType = 'success' | 'error' | 'info';
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 export interface ToastOptions {
   title?: string;
@@ -82,11 +82,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl border bg-[#FFFFFF] shadow-lg transition-all animate-in slide-in-from-top-4 fade-in duration-200
               ${toast.type === 'success' ? 'border-[#15803D]/30 shadow-[#15803D]/5' : 
                 toast.type === 'error' ? 'border-red-300 shadow-red-500/5' : 
+                toast.type === 'warning' ? 'border-amber-300 shadow-amber-500/5' :
                 'border-[#EA580C]/30 shadow-[#EA580C]/5'}
             `}
           >
             {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-[#15803D] shrink-0 mt-0.5" />}
             {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />}
+            {toast.type === 'warning' && <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />}
             {toast.type === 'info' && <Info className="w-5 h-5 text-[#EA580C] shrink-0 mt-0.5" />}
             
             <div className="flex-1">

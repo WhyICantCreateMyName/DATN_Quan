@@ -67,7 +67,8 @@ router.post('/lookup', async (req: Request, res: Response) => {
       hasAccess,
       plan: mainPlan,
       expireDate: expireString,
-      remainingDays: daysRemaining
+      remainingDays: daysRemaining,
+      remainingPtSessions: user.memberProfile?.remainingPtSessions || 0
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });

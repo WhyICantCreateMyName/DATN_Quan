@@ -29,7 +29,13 @@ export namespace TrainerType {
   export type Dashboard = { 
     completedThisMonth: number; 
     pendingClasses: number; 
-    commissionEstimated: number 
+    commissionEstimated: number;
+    commissionEarned?: number;
+    kpi?: {
+      targetAmount: number;
+      achievedAmount: number;
+      achievementPercent: number;
+    } | null;
   };
   
   export type ScheduleItem = Prisma.BookingGetPayload<{ 

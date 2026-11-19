@@ -7,13 +7,13 @@ import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 
 const COLORS = {
-   background: '#020617',
-   card: '#0f172a',
-   primary: '#f59e0b',
-   textMain: '#ffffff',
-   textSecondary: '#94a3b8',
-   border: '#1e293b',
-   timeSection: '#111827'
+   background: '#0E100F',
+   card: '#1A1D1B',
+   primary: '#C8F135',
+   textMain: '#F4F5F0',
+   textSecondary: '#8E9490',
+   border: '#282C29',
+   timeSection: '#242826'
 };
 
 export default function ScheduleScreen() {

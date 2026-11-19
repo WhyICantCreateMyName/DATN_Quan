@@ -74,6 +74,10 @@ router.post('/momo-ipn', async (req: Request, res: Response) => {
       // De don gian, ta se thuc hien subscribe luon o day
       const plan = await prisma.membershipPlan.findUnique({ where: { id: Number(planId) } });
       if (plan) {
+         // Tìm người lập hóa đơn hệ thống (Admin)
+         const systemAdmin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+         const cashierId = systemAdmin ? systemAdmin.id : 1;
+
          const existingSub = await prisma.memberSubscription.findFirst({
             where: { memberId: Number(memberId), status: 'ACTIVE' },
             include: { plan: true }
@@ -83,6 +87,24 @@ router.post('/momo-ipn', async (req: Request, res: Response) => {
             const newEndDate = new Date(existingSub.endDate);
             newEndDate.setDate(newEndDate.getDate() + plan.durationDays);
             await prisma.$transaction([
+               // 1. Lập Hóa Đơn Doanh Thu Online
+               prisma.invoice.create({
+                  data: {
+                     cashierId,
+                     memberId: Number(memberId),
+                     totalAmount: plan.price,
+                     paymentMethod: 'MOMO',
+                     items: {
+                        create: [{
+                           planId: plan.id,
+                           quantity: 1,
+                           unitPrice: plan.price,
+                           subTotal: plan.price
+                        }]
+                     }
+                  }
+               }),
+               // 2. Gia hạn hợp đồng thẻ
                prisma.memberSubscription.update({
                   where: { id: existingSub.id },
                   data: { 
@@ -90,6 +112,7 @@ router.post('/momo-ipn', async (req: Request, res: Response) => {
                      grantedPtSessions: existingSub.grantedPtSessions + plan.ptSessions
                   }
                }),
+               // 3. Nạp số buổi PT vào ví
                prisma.memberProfile.update({
                   where: { id: Number(memberId) },
                   data: { remainingPtSessions: { increment: plan.ptSessions } }
@@ -99,6 +122,24 @@ router.post('/momo-ipn', async (req: Request, res: Response) => {
             const endDate = new Date();
             endDate.setDate(endDate.getDate() + plan.durationDays);
             await prisma.$transaction([
+               // 1. Lập Hóa Đơn Doanh Thu Online
+               prisma.invoice.create({
+                  data: {
+                     cashierId,
+                     memberId: Number(memberId),
+                     totalAmount: plan.price,
+                     paymentMethod: 'MOMO',
+                     items: {
+                        create: [{
+                           planId: plan.id,
+                           quantity: 1,
+                           unitPrice: plan.price,
+                           subTotal: plan.price
+                        }]
+                     }
+                  }
+               }),
+               // 2. Khởi tạo hợp đồng gói mới
                prisma.memberSubscription.create({
                   data: {
                      memberId: Number(memberId),
@@ -109,13 +150,14 @@ router.post('/momo-ipn', async (req: Request, res: Response) => {
                      status: 'ACTIVE'
                   }
                }),
+               // 3. Nạp số buổi PT vào ví
                prisma.memberProfile.update({
                   where: { id: Number(memberId) },
                   data: { remainingPtSessions: { increment: plan.ptSessions } }
                })
             ]);
          }
-         console.log('Successfully activated subscription via MoMo IPN');
+         console.log('Successfully activated subscription & generated MoMo Invoice');
       }
     } catch (e) {
       console.error('IPN Processing Error:', e);

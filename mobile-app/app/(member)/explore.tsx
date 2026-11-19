@@ -2,15 +2,16 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, ActivityIn
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useBooking } from '@/hooks/useBooking';
-import { Calendar, Clock, User, CheckCircle2 } from 'lucide-react-native';
+import { Calendar, Clock, User, CheckCircle2, Dumbbell, Users } from 'lucide-react-native';
+import { KINETIC_THEME } from '@/constants/theme';
 
 const COLORS = {
-  background: '#020617',
-  card: '#0f172a',
-  primary: '#0ea5e9',
-  textMain: '#ffffff',
-  textSecondary: '#94a3b8',
-  border: '#1e293b',
+  background: KINETIC_THEME.background,
+  card: KINETIC_THEME.surface,
+  primary: KINETIC_THEME.accentPrimary,
+  textMain: KINETIC_THEME.textPrimary,
+  textSecondary: KINETIC_THEME.textMuted,
+  border: KINETIC_THEME.border,
   success: '#10b981'
 };
 
@@ -377,7 +378,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   bookButtonText: {
-    color: '#fff',
+    color: KINETIC_THEME.textOnAccent,
     fontWeight: '900',
     fontSize: 16,
     letterSpacing: 1,

@@ -2,17 +2,9 @@ import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, A
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useCallback, useEffect } from 'react';
 import { memberService } from '@/services/memberApi';
-import { Dumbbell, Calendar, User, ChevronDown, ChevronUp } from 'lucide-react-native';
-
-const COLORS = {
-  background: '#020617',
-  card: '#0f172a',
-  primary: '#0ea5e9',
-  textMain: '#ffffff',
-  textSecondary: '#64748b',
-  border: '#1e293b',
-  accent: '#38bdf8'
-};
+import { Dumbbell, Calendar, User, ChevronDown, ChevronUp, Zap, Apple, Layers } from 'lucide-react-native';
+import { KINETIC_THEME } from '@/constants/theme';
+import { formatDate } from '@/libs/utils';
 
 export default function WorkoutLogsScreen() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -23,15 +15,20 @@ export default function WorkoutLogsScreen() {
   const load = async () => {
     try {
       const data = await memberService.getWorkoutLogs();
-      setLogs(data);
+      setLogs(data || []);
+      if (data && data.length > 0 && expandedId === null) {
+        setExpandedId(data[0].id); // Expand the newest log by default
+      }
     } catch (e) {
-      console.error(e);
+      console.error('Error fetching workout logs:', e);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -45,88 +42,147 @@ export default function WorkoutLogsScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color={COLORS.primary} size="large" />
+        <ActivityIndicator color={KINETIC_THEME.accentPrimary} size="large" />
+        <Text style={styles.loadingText}>Đang tải giáo án tập luyện...</Text>
       </View>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Giáo Án Tập Luyện</Text>
-        <Text style={styles.headerSubtitle}>Lịch sử bài tập từ PT của bạn</Text>
+        <Text style={styles.headerSubtitle}>GIÁO ÁN ĐIỆN TỬ</Text>
+        <Text style={styles.headerTitle}>Nhật Ký Tập Luyện</Text>
       </View>
 
       <ScrollView
-        style={styles.scroll}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={KINETIC_THEME.accentPrimary}
+          />
+        }
+        style={styles.scrollView}
+        contentContainerStyle={{ paddingBottom: 48 }}
+        showsVerticalScrollIndicator={false}
       >
         {logs.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Dumbbell color={COLORS.border} size={64} />
-            <Text style={styles.emptyText}>Chưa có giáo án nào được ghi nhận.</Text>
-            <Text style={styles.emptySubText}>Hãy bắt đầu tập luyện cùng PT để theo dõi tiến độ!</Text>
+            <Dumbbell size={40} color={KINETIC_THEME.textMuted} />
+            <Text style={styles.emptyTitle}>Chưa có giáo án nào</Text>
+            <Text style={styles.emptyDesc}>
+              Sau mỗi buổi tập kèm PT, huấn luyện viên sẽ cập nhật các bài tập, mức tạ và nhận xét thể lực vào đây.
+            </Text>
           </View>
         ) : (
-          logs.map((log) => (
-            <TouchableOpacity
-              key={log.id}
-              onPress={() => toggleExpand(log.id)}
-              activeOpacity={0.7}
-              style={[styles.logCard, expandedId === log.id && styles.logCardExpanded]}
-            >
-              <View style={styles.logHeader}>
-                <View style={styles.dateBadge}>
-                   <Text style={styles.dateDay}>{new Date(log.date).getDate()}</Text>
-                   <Text style={styles.dateMonth}>Tháng {new Date(log.date).getMonth() + 1}</Text>
-                </View>
-                <View style={styles.logInfo}>
-                  <Text style={styles.logTitle}>{log.notes || 'Buổi tập cá nhân'}</Text>
-                  <View style={styles.trainerRow}>
-                    <User color={COLORS.accent} size={14} style={{ marginRight: 4 }} />
-                    <Text style={styles.trainerName}>PT: {log.trainer?.user?.fullName}</Text>
-                  </View>
-                </View>
-                {expandedId === log.id ? <ChevronUp color={COLORS.textSecondary} /> : <ChevronDown color={COLORS.textSecondary} />}
-              </View>
+          logs.map((log) => {
+            const isExpanded = expandedId === log.id;
+            const exercisesCount = log.exercises?.length || 0;
 
-              {expandedId === log.id && (
-                <View style={styles.detailsContainer}>
-                  {log.energyLevel && (
+            return (
+              <View key={log.id} style={styles.card}>
+                {/* Header Row */}
+                <TouchableOpacity
+                  onPress={() => toggleExpand(log.id)}
+                  style={styles.cardHeader}
+                  activeOpacity={0.7}
+                >
+                  <View style={{ flex: 1 }}>
                     <View style={styles.metaRow}>
-                      <Text style={styles.metaLabel}>Thể lực: </Text>
-                      <Text style={styles.metaValue}>{log.energyLevel}</Text>
-                    </View>
-                  )}
-                  {log.nutrition && (
-                    <View style={styles.metaRow}>
-                      <Text style={styles.metaLabel}>Dinh dưỡng: </Text>
-                      <Text style={styles.metaValue}>{log.nutrition}</Text>
-                    </View>
-                  )}
-
-                  <View style={styles.exerciseList}>
-                    <Text style={styles.listTitle}>Danh sách bài tập:</Text>
-                    {log.exercises.map((ex: any, idx: number) => (
-                      <View key={ex.id} style={styles.exerciseItem}>
-                        <View style={styles.exNumberContainer}>
-                           <Text style={styles.exNumber}>{idx + 1}</Text>
-                        </View>
-                        <View style={styles.exContent}>
-                          <Text style={styles.exName}>{ex.name}</Text>
-                          <Text style={styles.exStats}>
-                            {ex.sets} hiệp × {ex.reps} lần {ex.weight ? `(${ex.weight}kg)` : ''}
-                          </Text>
-                          {ex.notes && <Text style={styles.exNote}>• {ex.notes}</Text>}
-                        </View>
+                      <View style={styles.dateBadge}>
+                        <Calendar size={12} color={KINETIC_THEME.accentPrimary} />
+                        <Text style={styles.dateText}>{formatDate(log.date)}</Text>
                       </View>
-                    ))}
+                      {log.trainer?.user && (
+                        <View style={styles.ptBadge}>
+                          <User size={12} color={KINETIC_THEME.textMuted} />
+                          <Text style={styles.ptText}>PT: {log.trainer.user.fullName}</Text>
+                        </View>
+                      )}
+                    </View>
+
+                    <Text style={styles.logTitle}>
+                      {log.notes || `Buổi tập ngày ${formatDate(log.date)}`}
+                    </Text>
+
+                    <Text style={styles.exerciseSummary}>
+                      {exercisesCount} bài tập • {log.energyLevel || 'Thể lực tốt'}
+                    </Text>
                   </View>
-                </View>
-              )}
-            </TouchableOpacity>
-          ))
+
+                  <View style={styles.expandIcon}>
+                    {isExpanded ? (
+                      <ChevronUp size={20} color={KINETIC_THEME.accentPrimary} />
+                    ) : (
+                      <ChevronDown size={20} color={KINETIC_THEME.textMuted} />
+                    )}
+                  </View>
+                </TouchableOpacity>
+
+                {/* Expanded Details */}
+                {isExpanded && (
+                  <View style={styles.cardBody}>
+                    {/* Energy & Nutrition */}
+                    {(log.energyLevel || log.nutrition) && (
+                      <View style={styles.feedbackBox}>
+                        {log.energyLevel && (
+                          <View style={styles.feedbackItem}>
+                            <Zap size={14} color={KINETIC_THEME.accentPrimary} />
+                            <Text style={styles.feedbackText}>
+                              Thể lực: <Text style={{ color: KINETIC_THEME.textPrimary, fontWeight: '700' }}>{log.energyLevel}</Text>
+                            </Text>
+                          </View>
+                        )}
+                        {log.nutrition && (
+                          <View style={styles.feedbackItem}>
+                            <Apple size={14} color="#10B981" />
+                            <Text style={styles.feedbackText}>
+                              Dinh dưỡng: <Text style={{ color: KINETIC_THEME.textPrimary, fontWeight: '700' }}>{log.nutrition}</Text>
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    )}
+
+                    {/* Exercises List */}
+                    <View style={styles.exerciseList}>
+                      <Text style={styles.listHeading}>DANH SÁCH BÀI TẬP</Text>
+
+                      {log.exercises?.map((ex: any, idx: number) => (
+                        <View key={ex.id || idx} style={styles.exerciseItem}>
+                          <View style={styles.exIndex}>
+                            <Text style={styles.exIndexText}>{idx + 1}</Text>
+                          </View>
+
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.exName}>{ex.name}</Text>
+                            <View style={styles.exStats}>
+                              <Text style={styles.exStatPill}>
+                                <Text style={styles.statNum}>{ex.sets}</Text> sets
+                              </Text>
+                              <Text style={styles.exStatPill}>
+                                <Text style={styles.statNum}>{ex.reps}</Text> reps
+                              </Text>
+                              {ex.weight > 0 && (
+                                <Text style={[styles.exStatPill, styles.weightHighlight]}>
+                                  <Text style={[styles.statNum, { color: KINETIC_THEME.accentPrimary }]}>{ex.weight}</Text> kg
+                                </Text>
+                              )}
+                            </View>
+                            {ex.notes ? (
+                              <Text style={styles.exNotes}>{ex.notes}</Text>
+                            ) : null}
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </View>
+            );
+          })
         )}
       </ScrollView>
     </SafeAreaView>
@@ -134,36 +190,217 @@ export default function WorkoutLogsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  loadingContainer: { flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' },
-  header: { paddingHorizontal: 24, paddingVertical: 24 },
-  headerTitle: { fontSize: 28, fontWeight: '900', color: COLORS.textMain },
-  headerSubtitle: { color: COLORS.primary, fontSize: 13, fontWeight: '600', marginTop: 4, letterSpacing: 0.5 },
-  scroll: { flex: 1, paddingHorizontal: 24 },
-  emptyContainer: { alignItems: 'center', marginTop: 80, opacity: 0.8 },
-  emptyText: { color: COLORS.textMain, fontSize: 16, fontWeight: '700', marginTop: 20 },
-  emptySubText: { color: COLORS.textSecondary, fontSize: 14, marginTop: 8, textAlign: 'center' },
-  logCard: { backgroundColor: COLORS.card, borderRadius: 24, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: COLORS.border },
-  logCardExpanded: { borderColor: COLORS.primary },
-  logHeader: { flexDirection: 'row', alignItems: 'center' },
-  dateBadge: { width: 60, height: 60, backgroundColor: 'rgba(14, 165, 233, 0.1)', borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 16 },
-  dateDay: { color: COLORS.primary, fontSize: 22, fontWeight: '900' },
-  dateMonth: { color: COLORS.primary, fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
-  logInfo: { flex: 1 },
-  logTitle: { color: COLORS.textMain, fontSize: 16, fontWeight: '800', marginBottom: 4 },
-  trainerRow: { flexDirection: 'row', alignItems: 'center' },
-  trainerName: { color: COLORS.textSecondary, fontSize: 12, fontWeight: '600' },
-  detailsContainer: { marginTop: 20, paddingTop: 20, borderTopWidth: 1, borderTopColor: COLORS.border },
-  metaRow: { flexDirection: 'row', marginBottom: 8 },
-  metaLabel: { color: COLORS.textSecondary, fontSize: 12, fontWeight: '700' },
-  metaValue: { color: COLORS.textMain, fontSize: 12, fontWeight: '600', flex: 1 },
-  exerciseList: { marginTop: 16 },
-  listTitle: { color: COLORS.accent, fontSize: 14, fontWeight: '900', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 },
-  exerciseItem: { flexDirection: 'row', marginBottom: 16 },
-  exNumberContainer: { width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.border, alignItems: 'center', justifyContent: 'center', marginRight: 12, marginTop: 2 },
-  exNumber: { color: COLORS.textSecondary, fontSize: 12, fontWeight: '900' },
-  exContent: { flex: 1 },
-  exName: { color: COLORS.textMain, fontSize: 15, fontWeight: '800' },
-  exStats: { color: COLORS.primary, fontSize: 13, fontWeight: '700', marginTop: 2 },
-  exNote: { color: COLORS.textSecondary, fontSize: 12, fontStyle: 'italic', marginTop: 4 }
+  container: {
+    flex: 1,
+    backgroundColor: KINETIC_THEME.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: KINETIC_THEME.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    color: KINETIC_THEME.textMuted,
+    fontSize: 14,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: KINETIC_THEME.border,
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: KINETIC_THEME.accentPrimary,
+    letterSpacing: 1.5,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: KINETIC_THEME.textPrimary,
+    marginTop: 2,
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  emptyContainer: {
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: KINETIC_THEME.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+    marginTop: 20,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: KINETIC_THEME.textPrimary,
+    marginTop: 12,
+  },
+  emptyDesc: {
+    fontSize: 12,
+    color: KINETIC_THEME.textMuted,
+    textAlign: 'center',
+    marginTop: 6,
+    lineHeight: 18,
+  },
+  card: {
+    backgroundColor: KINETIC_THEME.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+    marginBottom: 14,
+    overflow: 'hidden',
+  },
+  cardHeader: {
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 6,
+  },
+  dateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  dateText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: KINETIC_THEME.accentPrimary,
+  },
+  ptBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ptText: {
+    fontSize: 11,
+    color: KINETIC_THEME.textMuted,
+  },
+  logTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: KINETIC_THEME.textPrimary,
+  },
+  exerciseSummary: {
+    fontSize: 12,
+    color: KINETIC_THEME.textMuted,
+    marginTop: 3,
+  },
+  expandIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: KINETIC_THEME.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+  },
+  cardBody: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: KINETIC_THEME.border,
+  },
+  feedbackBox: {
+    backgroundColor: KINETIC_THEME.background,
+    borderRadius: 12,
+    padding: 12,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+    gap: 8,
+  },
+  feedbackItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  feedbackText: {
+    fontSize: 12,
+    color: KINETIC_THEME.textMuted,
+  },
+  exerciseList: {
+    gap: 10,
+  },
+  listHeading: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: KINETIC_THEME.textMuted,
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  exerciseItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    backgroundColor: KINETIC_THEME.background,
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+  },
+  exIndex: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: KINETIC_THEME.surface,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  exIndexText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: KINETIC_THEME.accentPrimary,
+  },
+  exName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: KINETIC_THEME.textPrimary,
+  },
+  exStats: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 6,
+  },
+  exStatPill: {
+    fontSize: 11,
+    color: KINETIC_THEME.textMuted,
+    backgroundColor: KINETIC_THEME.surface,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: KINETIC_THEME.border,
+  },
+  weightHighlight: {
+    borderColor: 'rgba(200, 241, 53, 0.3)',
+  },
+  statNum: {
+    fontWeight: '800',
+    color: KINETIC_THEME.textPrimary,
+  },
+  exNotes: {
+    fontSize: 11,
+    color: KINETIC_THEME.textMuted,
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
 });

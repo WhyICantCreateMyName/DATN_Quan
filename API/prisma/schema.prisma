@@ -19,6 +19,7 @@ model User {
   // Các quyền: "ADMIN", "RECEPTIONIST", "PT", "MEMBER"
   role         String   @default("MEMBER") 
   isActive     Boolean  @default(true)
+  baseSalary   Float    @default(8000000) // Lương cứng hàng tháng
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -248,6 +249,7 @@ model InvoiceItem {
   product      Product? @relation(fields: [productId], references: [id])
   
   quantity     Int      @default(1)
+  unitPrice    Float    @default(0) // Đơn giá tại thời điểm lập hóa đơn
   subTotal     Float
 }
 
@@ -292,6 +294,8 @@ model StaffKPI {
   
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  @@unique([userId, month, year])
 }
 
 // Ghi nhận hoa hồng thực tế cho nhân viên

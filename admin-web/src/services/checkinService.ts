@@ -9,6 +9,7 @@ export interface MemberLookupResponse {
   plan: string;
   expireDate: string;
   remainingDays: number;
+  remainingPtSessions?: number;
 }
 
 export const checkinService = {

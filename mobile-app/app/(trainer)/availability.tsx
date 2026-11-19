@@ -6,14 +6,14 @@ import { useRouter } from 'expo-router';
 import { ChevronLeft, Plus, Trash2, Save, Calendar, Clock, X } from 'lucide-react-native';
 
 const COLORS = {
-  background: '#020617',
-  card: '#0f172a',
-  primary: '#f59e0b',
-  textMain: '#ffffff',
-  textSecondary: '#94a3b8',
-  border: '#1e293b',
-  error: '#ef4444',
-  success: '#22c55e'
+  background: '#0E100F',
+  card: '#1A1D1B',
+  primary: '#C8F135',
+  textMain: '#F4F5F0',
+  textSecondary: '#8E9490',
+  border: '#282C29',
+  error: '#FF5A36',
+  success: '#C8F135'
 };
 
 const DAYS = [
