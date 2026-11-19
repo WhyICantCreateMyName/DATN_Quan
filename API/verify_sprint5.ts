@@ -98,8 +98,8 @@ async function runVerification() {
 
     // 5. Kiểm tra PT Dashboard tính hoa hồng động từ CommissionLog
     console.log('\n--- 5. Kiểm tra PT Dashboard (Không hardcode 150k) ---');
-    const ptUser = await prisma.user.findFirst({ where: { phone: '0988888888' } });
-    if (!ptUser) throw new Error('Không tìm thấy PT Master');
+    const ptUser = await prisma.user.findFirst({ where: { role: 'PT' } });
+    if (!ptUser) throw new Error('Không tìm thấy Huấn luyện viên PT');
 
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const commAggr = await prisma.commissionLog.aggregate({
