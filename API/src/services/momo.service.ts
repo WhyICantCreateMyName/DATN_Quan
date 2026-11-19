@@ -6,8 +6,8 @@ const MOMO_CONFIG = {
   secretKey: process.env.MOMO_SECRET_KEY || 'K951B6PE1waDMi640xX08PD3vg6EkVlz',
   endpoint: process.env.MOMO_ENDPOINT || 'https://test-payment.momo.vn/v2/gateway/api/create',
   // RedirectUrl cho Mobile nên là Deep Link (Ví dụ: exp:// cho Expo hoặc titangym:// cho App thật)
-  redirectUrl: process.env.MOMO_REDIRECT_URL || 'exp://192.168.0.100:8081',
-  ipnUrl: process.env.MOMO_IPN_URL || 'https://robert-leafiest-kristen.ngrok-free.dev/api/payment/momo-ipn',
+  redirectUrl: process.env.MOMO_REDIRECT_URL || 'memberapp://payment-result',
+  ipnUrl: process.env.MOMO_IPN_URL || 'https://gym-api.thanhcanghaiphong.online/api/payment/momo-ipn',
 };
 
 const buildCreateSignature = (payload: any) => {
